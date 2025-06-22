@@ -1,0 +1,64 @@
+.buttonWrapper{
+    display:flex;
+    position:relative;
+    z-index: 10;
+    justify-content: center;
+    width: 680px;
+    height: 290px;
+}
+
+.buttonHead{
+    width: 600px;
+    height: 178px;
+    background-color: #DF3636;
+    position:absolute;
+    border-radius: 66px;
+    top: 10px;
+    transition: top 0.5s ease-in-out;
+    display:flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.active{
+    width: 600px;
+    height: 178px;
+    background-color: #DF3636;
+    position:absolute;
+    border-radius: 66px;
+    transition: top 0.2s;
+    top: 50px;
+}
+
+.buttonBase{
+    background-color: #252222;
+    width: 680px;
+    height: 160px;
+    position:absolute;
+    bottom: 0px;
+    border-radius: 25px;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    color:white;
+    font-size: 3rem;
+}
+
+.invisible{
+    position:absolute;
+    top: 50px;
+    transition:  top 0.2s;
+    color:black;
+    font-weight: bold;
+    font-size: 2rem;
+}
+
+.visible{
+    position:absolute;
+    top: -50px;
+    transition:  top 0.2s;
+    color:black;
+    font-weight: bold;
+    font-size: 2rem;
+}
+
