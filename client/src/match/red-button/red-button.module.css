@@ -3,17 +3,17 @@
     position:relative;
     z-index: 10;
     justify-content: center;
-    width: 680px;
-    height: 290px;
+    width: 340px;
+    height: 145px;
 }
 
 .buttonHead{
-    width: 600px;
-    height: 178px;
+    width: 300px;
+    height: 89px;
     background-color: #DF3636;
     position:absolute;
-    border-radius: 66px;
-    top: 10px;
+    border-radius: 33px;
+    top: -5px;
     transition: top 0.5s ease-in-out;
     display:flex;
     justify-content: center;
@@ -21,27 +21,27 @@
 }
 
 .active{
-    width: 600px;
-    height: 178px;
+    width: 300px;
+    height: 89px;
     background-color: #DF3636;
     position:absolute;
-    border-radius: 66px;
+    border-radius: 33px;
     transition: top 0.2s;
-    top: 50px;
+    top: 30px;
 }
 
 .buttonBase{
     background-color: #252222;
-    width: 680px;
-    height: 160px;
+    width: 340px;
+    height: 90px;
     position:absolute;
     bottom: 0px;
-    border-radius: 25px;
+    border-radius: 15px;
     display:flex;
     justify-content: center;
     align-items: center;
     color:white;
-    font-size: 3rem;
+    font-size: 2rem;
 }
 
 .invisible{
@@ -50,7 +50,7 @@
     transition:  top 0.2s;
     color:black;
     font-weight: bold;
-    font-size: 2rem;
+    font-size: 1.5rem;
 }
 
 .visible{
@@ -59,6 +59,23 @@
     transition:  top 0.2s;
     color:black;
     font-weight: bold;
-    font-size: 2rem;
+    font-size: 1.5rem;
+}
+
+.showing{
+    display:block;
+    
+}
+
+.notshowing{
+    display:none;
+}
+
+.wrapper{
+    width:100vw;
+    height:100vh;
+    display:flex;
+    justify-content: center;
+    align-items: center;
 }
 

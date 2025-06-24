@@ -1,0 +1,26 @@
+body{
+    margin: 0px;
+}
+
+.bar{
+    background-color: #252222;
+    height: 20vh;
+    width: 100vw;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    gap: 50px;
+}
+
+.itemList{
+    font-size: 4rem;
+    opacity: 40%;
+}
+
+.itemList:hover{
+    font-size: 4.5rem;
+}
+
+.itemHave{
+    opacity: 100%;
+}

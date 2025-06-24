@@ -1,13 +1,18 @@
 import styles from './red-button.module.css';
 import { useState, useEffect } from "react";
 import io from "socket.io-client";
-const socket = io.connect("http://localhost:3000");
+import Item from "../../item/item.jsx"
+const socket = io.connect(import.meta.env.VITE_BACKEND_URL);
+
 
 export default function RedButton(){
     const [active, setActive] = useState(false)
     const [message, setMessage]= useState("");
     const [timer, setTimer] = useState()
     const [activeNotif, setActiveNotif] = useState(false);
+    const [showItems, setShowItems] = useState(false);
+
+    //change later to whatever the username is
     const UID = "Player 1";
 
 
@@ -26,6 +31,7 @@ export default function RedButton(){
             socket.emit("button_press", {UID: UID});
             setActive(true);
             notify("You pressed the button!");
+            
         }
 
         //reset button after 2s
@@ -40,7 +46,8 @@ export default function RedButton(){
     function notify(message){
         setMessage(message);
         setActive(true);
-        setActiveNotif(true)
+        setActiveNotif(true);
+        setShowItems(false);
 
          //reset button after 2s
         setTimeout(() => {
@@ -66,6 +73,7 @@ export default function RedButton(){
     }, [socket])
 
     return(
+    <div className={styles.wrapper}>
         <div className={styles.buttonWrapper} onClick={()=>buttonClick()}>
             <div className={activeNotif ? styles.visible : styles.invisible}>{message}</div>
             <div className={active ? styles.active : styles.buttonHead}>
@@ -74,5 +82,11 @@ export default function RedButton(){
                 <h1>{timer}</h1>
             </div>
         </div>
+
+        <div className={showItems ? styles.showing : styles.notshowing}>
+            <Item showItems={showItems} setShowItems={setShowItems}/>
+        </div>
+    </div>
+        
     )
 }

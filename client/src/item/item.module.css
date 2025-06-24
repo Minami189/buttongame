@@ -1,0 +1,22 @@
+.Item{
+    height: 150px;
+    width: 150px;
+    font-size: 100px;
+    position:absolute;
+    z-index: 50;
+    text-justify: center;
+    text-align: center;
+    cursor: pointer;
+}
+
+.showing{
+    display:block;
+}
+
+.notshowing{
+    display:none;
+}
+
+.taken{
+    display:none;
+}
