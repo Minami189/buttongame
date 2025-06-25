@@ -22,5 +22,10 @@ body{
 }
 
 .itemHave{
+    font-size: 4rem;
     opacity: 100%;
+}
+
+.itemHave:hover{
+    font-size: 4.5rem;
 }

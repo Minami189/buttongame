@@ -1,14 +1,19 @@
 import styles from './bottombar.module.css'
+import { useEffect } from 'react'
+import io from 'socket.io-client'
+const socket = io.connect(import.meta.env.VITE_BACKEND_URL)
 
 
 export default function BottomBar({list, setList}){
-    //change later to be dynamic to whatever the player needs
+    useEffect(()=>{
+        
 
+    },[])
     return(
         <div className={styles.bar}>
             {
-                list.map((v)=>{
-                    return(<div className={styles.itemList}>{v}</div>)
+                list.map((v, i)=>{
+                    return(<div className={v.taken ? styles.itemHave : styles.itemList} id={`itemList-${i}`}>{v.item}</div>)
                 })
             }
         </div>

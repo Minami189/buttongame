@@ -65,12 +65,21 @@ export default function RedButton(){
             setTimer(data.time);
         })
 
+        //listener to when a player wins
+        socket.on("game_end", (data)=>{
+            alert(`player UID ${data.winnerUID} won the game`)
+            localStorage.clear();
+            //right now has the issue of not auto render/refresh
+            //but will be fixed anw when going to the end game screen
+        })
+
         return(()=>{
             socket.off("notify_press");
             socket.off("timer_tick")
+            socket.off("game_end")
         })
         
-    }, [socket])
+    }, [])
 
     return(
     <div className={styles.wrapper}>

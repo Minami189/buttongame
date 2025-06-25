@@ -1,40 +1,54 @@
 import styles from "./item.module.css";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import io from "socket.io-client";
+import {MatchContext} from "../match/match.jsx";
+
 
 const socket = io.connect(import.meta.env.VITE_BACKEND_URL)
 
-
 export default function Item({showItems, setShowItems}){
+
+//*change later to use env variables
 const items = ["🎈","🎄","🧤","🧶","🎩","🏈","👟","🍕","🍔","🍟","🚑","👓","🎃","🎀"];
 const [selected, setSelected] = useState([0]);
 const [positionx, setPositionx] = useState([0])
 const [positiony, setPositiony] = useState([0])
 
-
+//list and setList from match component
+const {list, setList, myUID} = useContext(MatchContext);
 
 
 useEffect(()=>{
     socket.on("populate_items", (data)=>{
-    setSelected(data.chosenItems);
-    setPositionx(data.positionx);
-    setPositiony(data.positiony);
-    setShowItems(true)
+        setSelected(data.chosenItems);
+        setPositionx(data.positionx);
+        setPositiony(data.positiony);
+        setShowItems(true)
     })
 
     socket.on("item_claimed", (data)=>{
-        itemDelete(data.claim_index)
+
+        //only the player who clicked will update their list in bottombar
+        if(data.playerUID == myUID){
+            setList(data.list);
+            localStorage.setItem("myItemList", JSON.stringify(data.list));
+        }
+
+        //delete for everyone 
+        itemDelete(data.claim_index);
     })
+
+    
 
     return(()=>{
-    socket.off("populate_items");
-    socket.off("item_claimed");
+        socket.off("populate_items");
+        socket.off("item_claimed");
     })
 
-},[socket])
+},[])
 
     function handleClick(index, item) {
-        socket.emit("click_item", {clickedindex: index}); 
+        socket.emit("click_item", {clickedindex: index, myUID: myUID, clickedItem: item, list: list}); 
     }
 
     function itemDelete(index){
