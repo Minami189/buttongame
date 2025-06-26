@@ -1,0 +1,33 @@
+.endWrapper{
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.blackbar{
+    background-color: #252222;
+    color:white;
+    font-size: 4rem;
+    width: 100vw;
+    display:flex;
+    justify-content: center;
+}
+
+.buttonsWrapper{
+    margin-top: 50px;
+    display:flex;
+    justify-content: center;
+    gap: 150px;
+}
+
+.buttonsWrapper button{
+    background-color: #F5F5F5;
+    color: #252222; 
+    font-size: 2rem;
+    padding: 15px 25px 15px 25px;
+    border:none;
+    border-radius: 15px;
+    font-weight: bold;
+    cursor:pointer;
+}

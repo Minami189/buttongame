@@ -1,13 +1,11 @@
 import styles from "./item.module.css";
 import { useEffect, useState, useContext } from "react";
-import io from "socket.io-client";
 import {MatchContext} from "../match/match.jsx";
 
-
-const socket = io.connect(import.meta.env.VITE_BACKEND_URL)
+import {AppContext} from "../App.jsx";
 
 export default function Item({showItems, setShowItems}){
-
+const socket = useContext(AppContext);
 //*change later to use env variables
 const items = ["🎈","🎄","🧤","🧶","🎩","🏈","👟","🍕","🍔","🍟","🚑","👓","🎃","🎀"];
 const [selected, setSelected] = useState([0]);

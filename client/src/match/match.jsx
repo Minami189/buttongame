@@ -32,6 +32,8 @@ export default function Match(){
             return JSON.parse(saved);
         }
         
+        //i know it bad to put it here but i put this here
+        localStorage.setItem("game_state", "match")
       
         let newList = [];
 

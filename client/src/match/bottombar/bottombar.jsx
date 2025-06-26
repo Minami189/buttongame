@@ -1,7 +1,8 @@
 import styles from './bottombar.module.css'
 import { useEffect } from 'react'
 import io from 'socket.io-client'
-const socket = io.connect(import.meta.env.VITE_BACKEND_URL)
+import {useContext} from "react";
+import {AppContext} from "../../App.jsx";
 
 
 export default function BottomBar({list, setList}){
@@ -13,7 +14,7 @@ export default function BottomBar({list, setList}){
         <div className={styles.bar}>
             {
                 list.map((v, i)=>{
-                    return(<div className={v.taken ? styles.itemHave : styles.itemList} id={`itemList-${i}`}>{v.item}</div>)
+                    return(<div className={v.taken ? styles.itemHave : styles.itemList} id={`listItem-${i}`}>{v.item}</div>)
                 })
             }
         </div>

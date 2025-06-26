@@ -1,5 +1,7 @@
 body{
     background-color: #EDA737;
+    margin: 0px;
+    padding:0px;
 }
 
 body::after{
@@ -11,7 +13,7 @@ body::after{
     height: 100vh;
     width: 100vw;
     background-size: 3%;
-    opacity: 50%;
+    opacity: 40%;
     animation: pan 150s infinite;
 }
 

@@ -51,7 +51,7 @@ const interval = setInterval(()=>{
 
 //button press mechanic
 io.on("connection", (socket)=>{
-
+    console.log(`${socket.id} has connected`)
     socket.on("button_press", (data)=>{
         //*change later to socket.to.emit for rooms
         socket.broadcast.emit("notify_press" ,{message: `${data.UID} pressed the button!`})
@@ -61,6 +61,37 @@ io.on("connection", (socket)=>{
             io.emit("timer_tick", {time: timer});
             pause = false
         }
+    })
+
+    socket.on("create_room", (data) => {
+        //leave all rooms first before autojoining
+        socket.rooms.forEach((v)=>{
+            if(v != socket.id){
+                socket.leave(v);
+                console.log("leaving room " + v);
+            }
+        })
+        socket.join(data.roomID);
+    });
+
+// join_room: check from your list
+    socket.on("join_room", (data) => {
+        const roomID = data.roomID;
+        
+        if (io.sockets.adapter.rooms.has(roomID)) {
+            socket.join(roomID);
+            socket.emit("attempt_join", { success: true, roomID });
+            console.log("joined room " + roomID);
+        } else {
+            socket.emit("attempt_join", { success: false });
+        }
+    });
+
+    //for messages in the lobby
+    socket.on("send_message", (data)=>{
+        
+        io.to(data.roomID).emit("update_messages", {content: data.content, senderName: data.name});
+        console.log(`someone messaged at ${data.roomID} with contents ${data.content}`)
     })
     
     socket.on("click_item", (data)=>{
@@ -74,8 +105,6 @@ io.on("connection", (socket)=>{
 
         
         console.log(activeItems);
-
-
         
         if (claimedIndex >= 0 && claimedIndex < activeItems.length) {
             //reset everytime to -1 cuz we are checking 
@@ -103,7 +132,7 @@ io.on("connection", (socket)=>{
             const takenItems = list.filter((v)=> v.taken)
             if(takenItems.length >= 5){
                 io.emit("game_end", {winnerUID: playerUID});
-            }
+            }   
             
         }
 

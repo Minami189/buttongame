@@ -1,16 +1,22 @@
 import styles from './red-button.module.css';
-import { useState, useEffect } from "react";
-import io from "socket.io-client";
+import { useState, useEffect} from "react";
+import {useNavigate} from "react-router-dom";
 import Item from "../../item/item.jsx"
-const socket = io.connect(import.meta.env.VITE_BACKEND_URL);
+import {useContext} from "react";
+import {AppContext} from "../../App.jsx";
+
+
 
 
 export default function RedButton(){
+    const socket = useContext(AppContext);
+
     const [active, setActive] = useState(false)
     const [message, setMessage]= useState("");
     const [timer, setTimer] = useState()
     const [activeNotif, setActiveNotif] = useState(false);
     const [showItems, setShowItems] = useState(false);
+    const navigate = useNavigate();
 
     //change later to whatever the username is
     const UID = "Player 1";
@@ -31,7 +37,6 @@ export default function RedButton(){
             socket.emit("button_press", {UID: UID});
             setActive(true);
             notify("You pressed the button!");
-            
         }
 
         //reset button after 2s
@@ -69,6 +74,8 @@ export default function RedButton(){
         socket.on("game_end", (data)=>{
             alert(`player UID ${data.winnerUID} won the game`)
             localStorage.clear();
+            localStorage.setItem("game_state", "end");
+            navigate("/end");
             //right now has the issue of not auto render/refresh
             //but will be fixed anw when going to the end game screen
         })

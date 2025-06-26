@@ -1,0 +1,93 @@
+.roomsWrapper{
+    z-index: 5;
+    position: relative;
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gameTitle{
+    font-size: 8rem;
+    text-align: center;
+}
+
+.buttonsWrapper{
+    margin-top: 50px;
+    display:flex;
+    justify-content: center;
+
+    gap: 250px;
+}
+
+
+button{
+    background-color: #F5F5F5;
+    color: #252222; 
+    font-size: 1rem;
+    padding: 15px 25px 15px 25px;
+    border:none;
+    border-radius: 15px;
+    font-weight: bold;
+    cursor:pointer;
+    background-color: hsl(37, 83%, 54%);
+}
+
+.joinRoom, .createRoom{
+    width: 250px;
+    height: 250px;
+    display:flex;
+    flex-direction: column;
+    background-color: #252222;
+    padding: 20px 25px 50px 25px;
+    color:white;
+    border-radius: 15px;
+}
+
+.joinRoom input{
+    border:none;
+    font-size: 1rem;
+    padding: 15px 25px 15px 25px;
+    border:none;
+    border-radius: 15px;
+    height: 10%;
+    width: 80%;
+    text-align: center;
+    margin-bottom: 25px;
+    background-color: transparent;
+    border: solid 1px rgb(146, 146, 146);
+    color:white;
+}
+
+.createRoom h1, .joinRoom h1{
+    font-size: 1.5rem;
+}
+
+.settingsWrapper{
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    gap: 25px;
+}
+
+.settingsWrapper input{
+    text-align: center;
+    font-size: 1rem;
+    border-radius: 15px;
+    border: solid 1px rgb(146, 146, 146);
+    background-color: transparent;
+    padding: 15px 1px 15px 15px;
+    color:white;
+}
+
+.createRoom button{
+    margin-top: 35px;
+}
+
+.segmenter{
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+}
+
