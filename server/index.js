@@ -4,10 +4,24 @@ const {Server} = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+const {nanoid} = require("nanoid");
+//jwt initialization
+dotenv.config();
+const jwt_secret_key = process.env.JWT_KEY
+
+
 let timer = 2;
 const items = ["🎈","🎄","🧤","🧶","🎩","🏈","👟","🍕","🍔","🍟","🚑","👓","🎃","🎀"];
 let pause = false;
 let activeItems = []
+
+//keeping track of players and their lists
+let players = [];
+
+//keeping track of rooms and their hosts
+let rooms = [];
 
 const io = new Server(server, {
     cors: {
@@ -52,6 +66,7 @@ const interval = setInterval(()=>{
 //button press mechanic
 io.on("connection", (socket)=>{
     console.log(`${socket.id} has connected`)
+
     socket.on("button_press", (data)=>{
         //*change later to socket.to.emit for rooms
         socket.broadcast.emit("notify_press" ,{message: `${data.UID} pressed the button!`})
@@ -71,6 +86,8 @@ io.on("connection", (socket)=>{
                 console.log("leaving room " + v);
             }
         })
+        console.log(`creating room ${data.roomID} with host ${data.host}`)
+        rooms = rooms.concat({roomID:data.roomID, host: data.host})
         socket.join(data.roomID);
     });
 
@@ -89,11 +106,65 @@ io.on("connection", (socket)=>{
 
     //for messages in the lobby
     socket.on("send_message", (data)=>{
-        
+        socket.join(data.roomID);
         io.to(data.roomID).emit("update_messages", {content: data.content, senderName: data.name});
         console.log(`someone messaged at ${data.roomID} with contents ${data.content}`)
     })
+
+    //emitted from start game button in lobby by host
+    socket.on("start_game", (data)=>{
+        const roomID = data.roomID;
+        const instanceID = data.instanceID;
+        //join first
+        socket.join(roomID);
+
+        //start game of all joint in the roomID 
+
+        const currentRoom = rooms.find((room)=> room.roomID == roomID);
+        console.log(currentRoom);
+        rooms.forEach((v)=>{
+            console.log("single room: " + v.host);
+        })
+
+        if(currentRoom.host == instanceID){
+            io.to(data.roomID).emit("begin_game");
+        }else{
+            console.log(data.instanceID + "you are not the host");
+        }        
+    }) 
+
+    //on user creating instnace
+    socket.on("login",(data)=>{
+        const displayName = data.instanceDisplayName;
+        const instanceID = nanoid(20);
+        const instanceToken = jwt.sign({displayName: displayName, instanceID: instanceID}, jwt_secret_key);
+
+        socket.emit("generate_token", {instanceToken: instanceToken});
+    })
     
+
+    //creating random list for each player  
+    socket.on("generate_list", (data)=>{
+
+        //for server side
+        //this is the random ID generated for the user instance
+        const instanceID = data.instanceID;
+        let generatedList = []
+
+        for(let i = 0; i < 5; i++){
+            const rand = Math.round(Math.random()*13);
+            generatedList = generatedList.concat({item: items[rand], taken: false});
+        }
+
+        players = players.concat({instanceID: instanceID, list: generatedList});
+
+        console.log(generatedList);
+        console.log(players);
+        //for clientside rendering of this
+        socket.emit("render_list", {generatedList: generatedList});
+    })
+
+    //*MUST BE CHANGED LATER WITH NEW SYSTEM
     socket.on("click_item", (data)=>{
         const claimedIndex = data.clickedindex;
 

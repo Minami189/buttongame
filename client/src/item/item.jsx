@@ -1,11 +1,9 @@
 import styles from "./item.module.css";
 import { useEffect, useState, useContext } from "react";
-import {MatchContext} from "../match/match.jsx";
-
 import {AppContext} from "../App.jsx";
 
 export default function Item({showItems, setShowItems}){
-const socket = useContext(AppContext);
+const {socket} = useContext(AppContext);
 //*change later to use env variables
 const items = ["🎈","🎄","🧤","🧶","🎩","🏈","👟","🍕","🍔","🍟","🚑","👓","🎃","🎀"];
 const [selected, setSelected] = useState([0]);
@@ -13,7 +11,7 @@ const [positionx, setPositionx] = useState([0])
 const [positiony, setPositiony] = useState([0])
 
 //list and setList from match component
-const {list, setList, myUID} = useContext(MatchContext);
+const {list, setList, myUID} = useContext(AppContext);
 
 
 useEffect(()=>{

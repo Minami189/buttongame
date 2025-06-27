@@ -9,7 +9,7 @@ import {AppContext} from "../../App.jsx";
 
 
 export default function RedButton(){
-    const socket = useContext(AppContext);
+    const {socket} = useContext(AppContext);
 
     const [active, setActive] = useState(false)
     const [message, setMessage]= useState("");

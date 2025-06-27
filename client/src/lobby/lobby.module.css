@@ -26,7 +26,7 @@ body{
 .chatWrapper{
     height: 80%;
     background-color: #252222;
-    width: 45%;
+    width: 70%;
     border-radius: 15px;
     display:flex;
     flex-direction: column;
@@ -58,4 +58,52 @@ input{
     font-size: 1.25rem;
     padding: 5px 15px 5px 15px;
     color:white;
+}
+
+.settingsWrapper{
+    height: 85%;
+    width: 100%;
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.settingHeader{
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.roomID{
+    font-size: 2.5rem;
+    margin: 0px;
+    line-height: normal;
+    height: 35px;
+    width: 350px;
+    text-align: center;
+    padding: 15px 25px 25px 25px;
+    border-radius: 15px;
+    font-weight: bold;
+    color: #252222;
+    background-color: #DF9620;
+    cursor:pointer;
+}
+
+.roomTitle{
+    color:white;
+    font-size: 2.5rem;
+}
+
+.startButton{
+    width: 400px;
+    height: 400px;
+    font-size: 5rem;
+    border-radius: 100%;
+    transition-duration: 0.2s;
+}
+
+.startButton:hover{
+    background-color: hsl(37, 75%, 65%);
+    font-size: 5.5rem;
 }

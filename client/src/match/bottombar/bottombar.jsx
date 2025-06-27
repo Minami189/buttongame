@@ -5,9 +5,9 @@ import {useContext} from "react";
 import {AppContext} from "../../App.jsx";
 
 
-export default function BottomBar({list, setList}){
+export default function BottomBar(){
+    const {list, setList} = useContext(AppContext);
     useEffect(()=>{
-        
 
     },[])
     return(

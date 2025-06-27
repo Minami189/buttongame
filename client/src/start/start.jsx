@@ -1,13 +1,14 @@
 import styles from "./start.module.css";
-import {useRef, useEffect, useState} from "react"
+import {useRef, useEffect, useState, useContext} from "react"
 import { useNavigate } from "react-router-dom";
+import { AppContext } from "../App";
 import {nanoid} from "nanoid";
+import { jwtDecode } from "jwt-decode";
 
 
 
-
-export default function Start({socket}){
-    
+export default function Start(){
+    const {socket, instanceID} = useContext(AppContext);
     const roomInput = useRef(); 
     const navigate = useNavigate();
     const [message, setMessage] = useState("");
@@ -20,7 +21,8 @@ export default function Start({socket}){
                 //then remember the new room
                 localStorage.setItem("roomID", data.roomID)
 
-                //then go to lobby
+                //then go to lobby and go game_state lobby
+                localStorage.setItem("game_state", "lobby")
                 navigate("/lobby");
             }else{
                 setMessage("couldn't find room")
@@ -42,12 +44,18 @@ export default function Start({socket}){
 
     function handleCreateRoom(){
         const roomID = nanoid(5);
-        socket.emit("create_room", {roomID: roomID});
+        const token = localStorage.getItem("instanceToken");
+        const decoded = jwtDecode(token);
+        
+        socket.emit("create_room", {roomID: roomID, host: decoded.instanceID});
         navigate("/lobby");
-        //first remove any existing room
+        //game state change
+
+        //remove any pre-existing room
         localStorage.removeItem("roomID");
 
-        //then remember the new room
+
+        //remember the new room
         localStorage.setItem("roomID", roomID);
     }
 
@@ -59,30 +67,15 @@ export default function Start({socket}){
 
             <div className={styles.buttonsWrapper}>
                 
-                
-                <div className={styles.createRoom}>
-                    <h1>Create a Room</h1>
-                    <div className={styles.settingsWrapper}>
-                        <div className={styles.segmenter}>
-                            <label>timer:</label>
-                            <input name="timer" type="number" max="20" min="5"/>
-                        </div>
-                        
-                        <div className={styles.segmenter}>
-                            <label>list size:</label>
-                            <input name="list size" type="number" max="10" min="1"/>
-                        </div>
-                    </div>
-                    
-                    <button onClick={handleCreateRoom}>Create</button>
-                </div>
-                
-
                 <div className={styles.joinRoom}>
-                    <h1>Join a Room</h1>
+                    <h1>Create a Room</h1>
+                    <button onClick={()=>handleCreateRoom()}>Create</button>
+
+                    <h1 style={{marginTop: "55px"}}>Join a Room</h1>
                     <input placeholder="Room ID" ref={roomInput}/>
                     <button onClick={()=>handleJoinRoom()}>Join</button>
                     <p style={{color:"red", fontSize:"1rem", textAlign:"center", display:"inline", margin:"0px", marginTop:"1rem"}}>{message}</p>
+                    
                 </div>
 
             </div>
