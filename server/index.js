@@ -22,7 +22,7 @@ let players = [];
 
 //keeping track of rooms and their hosts
 let rooms = [];
-
+let roomTimers = {}
 const io = new Server(server, {
     cors: {
         origin: "http://localhost:5173",
@@ -87,8 +87,11 @@ io.on("connection", (socket)=>{
             }
         })
         console.log(`creating room ${data.roomID} with host ${data.host}`)
-        rooms = rooms.concat({roomID:data.roomID, host: data.host})
+        rooms = rooms.concat({roomID:data.roomID, host: data.host, state: data.state})
         socket.join(data.roomID);
+
+        //create timer per room
+        
     });
 
 // join_room: check from your list
@@ -115,22 +118,30 @@ io.on("connection", (socket)=>{
     socket.on("start_game", (data)=>{
         const roomID = data.roomID;
         const instanceID = data.instanceID;
+
         //join first
         socket.join(roomID);
 
         //start game of all joint in the roomID 
+        let currentRoom;
 
-        const currentRoom = rooms.find((room)=> room.roomID == roomID);
-        console.log(currentRoom);
-        rooms.forEach((v)=>{
-            console.log("single room: " + v.host);
+        //change the state of that index
+        rooms.forEach((room, index)=>{
+            if(room.roomID == roomID){
+                rooms[index].state = "match";
+                currentRoom = room;
+            }
         })
+        
 
-        if(currentRoom.host == instanceID){
-            io.to(data.roomID).emit("begin_game");
-        }else{
-            console.log(data.instanceID + "you are not the host");
-        }        
+        if(currentRoom){
+            if(currentRoom.host == instanceID){
+                io.to(data.roomID).emit("begin_game");
+            }else{
+                console.log(data.instanceID + " you are not the host");
+            } 
+        }
+              
     }) 
 
     //on user creating instnace
@@ -142,6 +153,27 @@ io.on("connection", (socket)=>{
         socket.emit("generate_token", {instanceToken: instanceToken});
     })
     
+    //on creation of room
+    socket.on("check_state", (data)=>{
+        const roomID = data.roomID;
+        const currentRoom = rooms.find((room)=> room.roomID == roomID);
+        if(currentRoom){
+            socket.emit("update_state", {state: currentRoom.state});
+        }
+    })
+
+    //on loading of the bottombar list
+    socket.on("get_list", (data)=>{
+        const instanceID = data.instanceID;
+
+        console.log("your player: " + instanceID);
+        players.forEach((v)=>{
+            console.log(v.instanceID);
+        })
+        const player = players.find((player)=> player.instanceID == instanceID);
+        const list = player.list;
+        socket.emit("refresh_list", {list: list})
+    })
 
     //creating random list for each player  
     socket.on("generate_list", (data)=>{
@@ -156,9 +188,21 @@ io.on("connection", (socket)=>{
             generatedList = generatedList.concat({item: items[rand], taken: false});
         }
 
-        players = players.concat({instanceID: instanceID, list: generatedList});
-
-        console.log(generatedList);
+        if(players.length <= 0){
+            players = players.concat({instanceID: instanceID, list: generatedList})
+            console.log("added a player");
+        }else{
+            for(let i = 0; i < players.length; i++){
+                if(players[i].instanceID == instanceID){
+                    players[i].list = generatedList;
+                    console.log("changed a player");
+                    break;
+                }else{
+                    players = players.concat({instanceID: instanceID, list: generatedList})
+                    console.log("added a player");
+                }
+            }
+        }
         console.log(players);
         //for clientside rendering of this
         socket.emit("render_list", {generatedList: generatedList});
@@ -169,10 +213,19 @@ io.on("connection", (socket)=>{
         const claimedIndex = data.clickedindex;
 
         //UID of player who clicked
-        const playerUID = data.myUID;
+        const instanceID = data.instanceID;
         const clickedItem = data.clickedItem;
-        let list = data.list
-        
+
+   
+        let list;
+        let playerIndex;
+        for (let i = 0; i < players.length; i++){
+            if(players[i].instanceID == instanceID){
+                list = players[i].list;
+                playerIndex = i;
+            }
+        }
+
 
         
         console.log(activeItems);
@@ -195,14 +248,18 @@ io.on("connection", (socket)=>{
             //but in the client we will check for the player UID of who clicked
             if(foundIndex >= 0){
                 list[foundIndex].taken = true;
+                players[playerIndex].list[foundIndex].taken = true;
                 activeItems.splice(claimedIndex, 1);
-                io.emit("item_claimed", { claim_index: claimedIndex, playerUID:  playerUID, clickedItem: clickedItem, list: list});
+                console.log(list);
+                io.emit("item_claimed", { claim_index: claimedIndex, instanceID:  instanceID, clickedItem: clickedItem, list: players[playerIndex].list});
             }
             
 
-            const takenItems = list.filter((v)=> v.taken)
+            const takenItems = players[playerIndex].list.filter((item)=>item.taken);
+            console.log(takenItems);
             if(takenItems.length >= 5){
-                io.emit("game_end", {winnerUID: playerUID});
+                io.emit("game_end", {displayName: players[playerIndex].displayName});
+                rooms
             }   
             
         }

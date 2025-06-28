@@ -1,7 +1,7 @@
 import styles from "./item.module.css";
 import { useEffect, useState, useContext } from "react";
 import {AppContext} from "../App.jsx";
-
+import { jwtDecode } from "jwt-decode";
 export default function Item({showItems, setShowItems}){
 const {socket} = useContext(AppContext);
 //*change later to use env variables
@@ -11,7 +11,7 @@ const [positionx, setPositionx] = useState([0])
 const [positiony, setPositiony] = useState([0])
 
 //list and setList from match component
-const {list, setList, myUID} = useContext(AppContext);
+const {list, setList} = useContext(AppContext);
 
 
 useEffect(()=>{
@@ -23,9 +23,12 @@ useEffect(()=>{
     })
 
     socket.on("item_claimed", (data)=>{
-
+        const token = localStorage.getItem("instanceToken");
+        const decoded = jwtDecode(token);
+        const instanceID = decoded.instanceID;
         //only the player who clicked will update their list in bottombar
-        if(data.playerUID == myUID){
+
+        if(data.instanceID == instanceID){
             setList(data.list);
             localStorage.setItem("myItemList", JSON.stringify(data.list));
         }
@@ -44,7 +47,10 @@ useEffect(()=>{
 },[])
 
     function handleClick(index, item) {
-        socket.emit("click_item", {clickedindex: index, myUID: myUID, clickedItem: item, list: list}); 
+        const token = localStorage.getItem("instanceToken");
+        const decoded = jwtDecode(token);
+        const instanceID = decoded.instanceID;
+        socket.emit("click_item", {clickedindex: index, instanceID: instanceID, clickedItem: item, list: list}); 
     }
 
     function itemDelete(index){

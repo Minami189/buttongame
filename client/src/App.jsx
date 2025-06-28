@@ -15,7 +15,7 @@ export const AppContext = createContext();
 
 
 function App() {
-  const [list, setList] = useState();
+  const [list, setList] = useState([{item: "error", taken: false}]);
   const [instanceID, setInstanceID] = useState();
   const secret_jwt_key = import.meta.env.VITE_JWT_TOKEN;
 
@@ -24,7 +24,7 @@ function App() {
       socket.emit("join_room", {roomID: localStorage.getItem("roomID")});
     }
   },[socket])
-
+ 
   return (
     <AppContext.Provider value={{socket, list, setList, instanceID, setInstanceID, secret_jwt_key}}>
       <BrowserRouter>

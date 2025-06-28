@@ -28,6 +28,10 @@ export default function Lobby(){
     const message = useRef();
 
     useEffect(()=>{
+
+        //check roomState on render
+        checkRoomState();
+
         socket.on("update_messages", (data)=>{
             setMessages((prev)=> prev.concat({name:data.senderName, content:data.content}))
             console.log("messages updated...");
@@ -37,13 +41,19 @@ export default function Lobby(){
             console.log("begin")
             //create list for all when game has started
             genereateList();
-            
         })
 
         socket.on("render_list", (data)=>{
             setList(data.generatedList);
             navigate("/match");
         })
+
+        socket.on("update_state",(data)=>{
+            console.log("new game state: " + data.state);
+            if(data.state === "match"){
+                navigate("/match")
+            }
+        });
         
         return(()=>{
             socket.off("update_messages");
@@ -79,6 +89,11 @@ export default function Lobby(){
         const token = localStorage.getItem("instanceToken");
         const decoded = jwtDecode(token);
         socket.emit("generate_list", {instanceID: decoded.instanceID});
+    }
+
+    function checkRoomState(){
+        const roomID = localStorage.getItem("roomID");
+        socket.emit("check_state", {roomID: roomID});
     }
 
     return(

@@ -72,9 +72,10 @@ export default function RedButton(){
 
         //listener to when a player wins
         socket.on("game_end", (data)=>{
+            
             alert(`player UID ${data.winnerUID} won the game`)
-            localStorage.clear();
-            localStorage.setItem("game_state", "end");
+
+
             navigate("/end");
             //right now has the issue of not auto render/refresh
             //but will be fixed anw when going to the end game screen

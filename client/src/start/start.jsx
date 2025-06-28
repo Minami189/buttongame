@@ -47,14 +47,12 @@ export default function Start(){
         const token = localStorage.getItem("instanceToken");
         const decoded = jwtDecode(token);
         
-        socket.emit("create_room", {roomID: roomID, host: decoded.instanceID});
+        socket.emit("create_room", {roomID: roomID, host: decoded.instanceID, state: "lobby"});
         navigate("/lobby");
-        //game state change
 
         //remove any pre-existing room
         localStorage.removeItem("roomID");
-
-
+        
         //remember the new room
         localStorage.setItem("roomID", roomID);
     }
