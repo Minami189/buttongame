@@ -8,7 +8,7 @@ import { jwtDecode } from "jwt-decode";
 
 
 export default function Start(){
-    const {socket, instanceID} = useContext(AppContext);
+    const {socket, instanceID, state, setState} = useContext(AppContext);
     const roomInput = useRef(); 
     const navigate = useNavigate();
     const [message, setMessage] = useState("");
@@ -21,8 +21,7 @@ export default function Start(){
                 //then remember the new room
                 localStorage.setItem("roomID", data.roomID)
 
-                //then go to lobby and go game_state lobby
-                localStorage.setItem("game_state", "lobby")
+                //then go to lobby
                 navigate("/lobby");
             }else{
                 setMessage("couldn't find room")
@@ -34,6 +33,7 @@ export default function Start(){
 
         return(()=>{
             socket.off("attempt_join");
+            socket.off("change_state");
         })
     },[])
 
@@ -46,15 +46,15 @@ export default function Start(){
         const roomID = nanoid(5);
         const token = localStorage.getItem("instanceToken");
         const decoded = jwtDecode(token);
-        
         socket.emit("create_room", {roomID: roomID, host: decoded.instanceID, state: "lobby"});
-        navigate("/lobby");
 
         //remove any pre-existing room
         localStorage.removeItem("roomID");
         
         //remember the new room
         localStorage.setItem("roomID", roomID);
+
+        navigate("/lobby");
     }
 
     return(

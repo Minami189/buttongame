@@ -4,7 +4,7 @@ import {useNavigate} from "react-router-dom";
 import Item from "../../item/item.jsx"
 import {useContext} from "react";
 import {AppContext} from "../../App.jsx";
-
+import { jwtDecode } from 'jwt-decode';
 
 
 
@@ -19,14 +19,13 @@ export default function RedButton(){
     const navigate = useNavigate();
 
     //change later to whatever the username is
-    const UID = "Player 1";
+
 
 
     //client change for the clicker
     function buttonClick(){
         
         if(timer >= 1){
-            
             setActiveNotif(true);
             setMessage("cannot press button yet!!!")
             setTimeout(() => {
@@ -34,7 +33,11 @@ export default function RedButton(){
             }, 1000);
 
         }else{
-            socket.emit("button_press", {UID: UID});
+            const token = localStorage.getItem("instanceToken");
+            const decoded = jwtDecode(token);
+            const displayName = decoded.displayName;
+            socket.emit("button_press", {displayName: displayName, roomID: localStorage.getItem("roomID")});
+            setTimer(2);
             setActive(true);
             notify("You pressed the button!");
         }
@@ -70,11 +73,9 @@ export default function RedButton(){
             setTimer(data.time);
         })
 
+        
         //listener to when a player wins
         socket.on("game_end", (data)=>{
-            
-            alert(`player UID ${data.winnerUID} won the game`)
-
 
             navigate("/end");
             //right now has the issue of not auto render/refresh

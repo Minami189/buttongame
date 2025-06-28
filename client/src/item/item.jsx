@@ -30,7 +30,6 @@ useEffect(()=>{
 
         if(data.instanceID == instanceID){
             setList(data.list);
-            localStorage.setItem("myItemList", JSON.stringify(data.list));
         }
 
         //delete for everyone 
@@ -50,7 +49,7 @@ useEffect(()=>{
         const token = localStorage.getItem("instanceToken");
         const decoded = jwtDecode(token);
         const instanceID = decoded.instanceID;
-        socket.emit("click_item", {clickedindex: index, instanceID: instanceID, clickedItem: item, list: list}); 
+        socket.emit("click_item", {clickedindex: index, instanceID: instanceID, clickedItem: item, list: list, roomID:localStorage.getItem("roomID")}); 
     }
 
     function itemDelete(index){

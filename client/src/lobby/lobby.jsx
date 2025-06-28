@@ -8,7 +8,7 @@ import {AppContext} from "../App.jsx";
 import { jwtDecode } from "jwt-decode";
 
 export default function Lobby(){
-    const {socket, list, setList, instanceID} = useContext(AppContext);
+    const {socket, list, setList, instanceID, state, setState} = useContext(AppContext);
     const navigate = useNavigate();
 
     
@@ -29,9 +29,14 @@ export default function Lobby(){
 
     useEffect(()=>{
 
-        //check roomState on render
-        checkRoomState();
+        socket.emit("check_state", {roomID: localStorage.getItem("roomID")});
 
+        socket.on("update_state", (data)=>{
+            setState(data.state);
+            console.log("state set to " + data.state)
+        })
+
+        //check roomState on render
         socket.on("update_messages", (data)=>{
             setMessages((prev)=> prev.concat({name:data.senderName, content:data.content}))
             console.log("messages updated...");
@@ -39,6 +44,7 @@ export default function Lobby(){
 
         socket.on("begin_game", ()=>{
             console.log("begin")
+            setState("match");
             //create list for all when game has started
             genereateList();
         })
@@ -47,17 +53,13 @@ export default function Lobby(){
             setList(data.generatedList);
             navigate("/match");
         })
-
-        socket.on("update_state",(data)=>{
-            console.log("new game state: " + data.state);
-            if(data.state === "match"){
-                navigate("/match")
-            }
-        });
         
+        
+
         return(()=>{
             socket.off("update_messages");
             socket.off("begin_game");
+            socket.off("render_list");
         })
 
     },[])
@@ -91,48 +93,55 @@ export default function Lobby(){
         socket.emit("generate_list", {instanceID: decoded.instanceID});
     }
 
-    function checkRoomState(){
-        const roomID = localStorage.getItem("roomID");
-        socket.emit("check_state", {roomID: roomID});
+    if(state == "loading"){
+        return(<div>Loading...</div>)
     }
+    else if(state == "lobby"){
+        return(
+            <div className={styles.lobbyWrapper}>
+                <div className={styles.blur}>
 
-    return(
-        <div className={styles.lobbyWrapper}>
-            <div className={styles.blur}>
+                    <div className={styles.chatWrapper}>
+                        <div className={styles.messages}>
+                            {
+                                messages.map((v,i)=>{
+                                    //if statement for when in the beginning it is undefined
+                                    if(v.name != undefined){
+                                        return(
+                                            <Message name={v.name} content={v.content}/>
+                                        )
+                                    }
+                                })
+                            }
+                            
+                            
+                        </div>
 
-                <div className={styles.chatWrapper}>
-                    <div className={styles.messages}>
-                        {
-                            messages.map((v,i)=>{
-                                //if statement for when in the beginning it is undefined
-                                if(v.name != undefined){
-                                    return(
-                                        <Message name={v.name} content={v.content}/>
-                                    )
-                                }
-                            })
-                        }
-                        
-                        
+                        <form onSubmit={handleSubmit}>
+                            <input placeholder="Message" ref={message}/>
+                        </form>        
+                            
                     </div>
 
-                    <form onSubmit={handleSubmit}>
-                        <input placeholder="Message" ref={message}/>
-                    </form>        
+
+                    <div className={styles.settingsWrapper}>  
+                        <div className={styles.settingHeader}>
+                            <h1 className={styles.roomTitle}>Room ID:</h1>
+                            <h1 className={styles.roomID} onClick={()=>copyRoomID()}>{localStorage.getItem("roomID")}</h1>
+                        </div>
                         
-                </div>
 
-
-                <div className={styles.settingsWrapper}>  
-                    <div className={styles.settingHeader}>
-                        <h1 className={styles.roomTitle}>Room ID:</h1>
-                        <h1 className={styles.roomID} onClick={()=>copyRoomID()}>{localStorage.getItem("roomID")}</h1>
+                        <button className={styles.startButton} onClick={()=>handleStart()}>START</button>
                     </div>
-                    
-
-                    <button className={styles.startButton} onClick={()=>handleStart()}>START</button>
                 </div>
             </div>
-        </div>
-    )
+        )
+    }else if(state=="match"){
+        navigate("/match");
+    }else if (state=="end"){
+        navigate("/end");
+    }else{
+        console.log("Unknown state: " + state);
+    }
+    
 }

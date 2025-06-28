@@ -14,15 +14,15 @@ const jwt_secret_key = process.env.JWT_KEY
 
 let timer = 2;
 const items = ["🎈","🎄","🧤","🧶","🎩","🏈","👟","🍕","🍔","🍟","🚑","👓","🎃","🎀"];
-let pause = false;
-let activeItems = []
+
+
 
 //keeping track of players and their lists
 let players = [];
 
 //keeping track of rooms and their hosts
-let rooms = [];
-let roomTimers = {}
+let rooms = {};
+let roomTimers = {};
 const io = new Server(server, {
     cors: {
         origin: "http://localhost:5173",
@@ -32,34 +32,10 @@ const io = new Server(server, {
 
 
 
-//Global timer
-const interval = setInterval(()=>{
-    if(timer <= 10 && timer >= 1){
-        timer--;
-        io.emit("timer_tick", {time: timer})
-    }
-
-//global item randomization 
-
-    else if(!pause){
-        let chosen = [];
-        let positionx = [];
-        let positiony = [];
-        pause = true; 
-        for (let i = 0; i < 3; i++){
-            chosen.push(Math.round(Math.random() * 13));
-            positiony.push(Math.random());
-            positionx.push(Math.random());
-        }
-
-        //everytime the timer runs out reset the server to think all items are active
-        activeItems = chosen;
-
-        console.log(`chosen items ${chosen}`);
-        io.emit("populate_items", {chosenItems: chosen, positionx: positionx, positiony: positiony})
-    }
-    
-}, 1000);
+function changeState(io, state, roomID){
+    io.to(roomID).emit("change_state", {state: state});
+    rooms[roomID].state = state;
+}
 
 
 
@@ -67,19 +43,32 @@ const interval = setInterval(()=>{
 io.on("connection", (socket)=>{
     console.log(`${socket.id} has connected`)
 
+    socket.on("check_state", (data)=>{
+        const roomID = data.roomID;
+        let state;
+        if(rooms[roomID]?.state !== undefined){
+            state = rooms[roomID].state;
+        }
+        socket.emit("update_state", {state: state});
+    })
+
     socket.on("button_press", (data)=>{
-        //*change later to socket.to.emit for rooms
-        socket.broadcast.emit("notify_press" ,{message: `${data.UID} pressed the button!`})
-        if(timer <= 0){
-            interval.refresh();
-            timer = 2; 
-            io.emit("timer_tick", {time: timer});
-            pause = false
+        socket.join(data.roomID);
+        socket.to(data.roomID).emit("notify_press" ,{message: `${data.UID} pressed the button!`})
+
+        if(roomTimers[data.roomID].currTime <= 0){
+            roomTimers[data.roomID].interval.refresh();
+            roomTimers[data.roomID].currTime = 2; 
+            roomTimers[data.roomID].pause = false
+            io.to(data.roomID).emit("timer_tick", {time: timer});
+
         }
     })
 
     socket.on("create_room", (data) => {
-        //leave all rooms first before autojoining
+        
+
+        //leave previous rooms first before autojoining
         socket.rooms.forEach((v)=>{
             if(v != socket.id){
                 socket.leave(v);
@@ -87,14 +76,45 @@ io.on("connection", (socket)=>{
             }
         })
         console.log(`creating room ${data.roomID} with host ${data.host}`)
-        rooms = rooms.concat({roomID:data.roomID, host: data.host, state: data.state})
+        rooms[data.roomID]= {roomID:data.roomID, host: data.host, state: data.state};
+        changeState(io, "lobby", data.roomID);
+        
         socket.join(data.roomID);
 
         //create timer per room
+        roomTimers[data.roomID] = {
+            activeItems: [],
+            pause: true,
+            currTime: 2,
+            interval: setInterval(()=>{
+                if(roomTimers[data.roomID].currTime >= 1){
+                    roomTimers[data.roomID].currTime--;
+                    io.emit("timer_tick", {time: roomTimers[data.roomID].currTime})
+                }
+
+                else if(!roomTimers[data.roomID].pause){
+                    let chosen = [];
+                    let positionx = [];
+                    let positiony = [];
+                    roomTimers[data.roomID].pause = true;
+                    for (let i = 0; i < 3; i++){
+                        chosen.push(Math.round(Math.random() * 13));
+                        positiony.push(Math.random());
+                        positionx.push(Math.random());
+                    }
+
+                    //everytime the timer runs out reset the server to think all items are active
+                    roomTimers[data.roomID].activeItems = chosen;
+
+                    io.to(data.roomID).emit("populate_items", {chosenItems: chosen, positionx: positionx, positiony: positiony})
+                }
+            }, 1000)
+        }
+
         
     });
 
-// join_room: check from your list
+// join_room: check from your list 
     socket.on("join_room", (data) => {
         const roomID = data.roomID;
         
@@ -118,25 +138,21 @@ io.on("connection", (socket)=>{
     socket.on("start_game", (data)=>{
         const roomID = data.roomID;
         const instanceID = data.instanceID;
+        roomTimers[roomID].pause = false;
 
         //join first
         socket.join(roomID);
 
-        //start game of all joint in the roomID 
-        let currentRoom;
-
-        //change the state of that index
-        rooms.forEach((room, index)=>{
-            if(room.roomID == roomID){
-                rooms[index].state = "match";
-                currentRoom = room;
-            }
-        })
         
+  
 
+        //get current room for reference
+        const currentRoom = rooms[roomID];
         if(currentRoom){
             if(currentRoom.host == instanceID){
-                io.to(data.roomID).emit("begin_game");
+                //change the state of that index
+                rooms[roomID].state="match";
+                io.to(roomID).emit("begin_game");
             }else{
                 console.log(data.instanceID + " you are not the host");
             } 
@@ -146,21 +162,13 @@ io.on("connection", (socket)=>{
 
     //on user creating instnace
     socket.on("login",(data)=>{
-        const displayName = data.instanceDisplayName;
+        const displayName = data.instanceDisplayName || "Player 1";
         const instanceID = nanoid(20);
         const instanceToken = jwt.sign({displayName: displayName, instanceID: instanceID}, jwt_secret_key);
 
         socket.emit("generate_token", {instanceToken: instanceToken});
     })
     
-    //on creation of room
-    socket.on("check_state", (data)=>{
-        const roomID = data.roomID;
-        const currentRoom = rooms.find((room)=> room.roomID == roomID);
-        if(currentRoom){
-            socket.emit("update_state", {state: currentRoom.state});
-        }
-    })
 
     //on loading of the bottombar list
     socket.on("get_list", (data)=>{
@@ -171,7 +179,12 @@ io.on("connection", (socket)=>{
             console.log(v.instanceID);
         })
         const player = players.find((player)=> player.instanceID == instanceID);
-        const list = player.list;
+        
+        let list;
+        if(player){
+            list = player.list;
+        }
+
         socket.emit("refresh_list", {list: list})
     })
 
@@ -228,9 +241,9 @@ io.on("connection", (socket)=>{
 
 
         
-        console.log(activeItems);
+        console.log(roomTimers[data.roomID].activeItems);
         
-        if (claimedIndex >= 0 && claimedIndex < activeItems.length) {
+        if (claimedIndex >= 0 && claimedIndex < roomTimers[data.roomID].activeItems.length) {
             //reset everytime to -1 cuz we are checking 
             let foundIndex = -1;
 
@@ -249,7 +262,7 @@ io.on("connection", (socket)=>{
             if(foundIndex >= 0){
                 list[foundIndex].taken = true;
                 players[playerIndex].list[foundIndex].taken = true;
-                activeItems.splice(claimedIndex, 1);
+                roomTimers[data.roomID].activeItems.splice(claimedIndex, 1);
                 console.log(list);
                 io.emit("item_claimed", { claim_index: claimedIndex, instanceID:  instanceID, clickedItem: clickedItem, list: players[playerIndex].list});
             }
@@ -258,14 +271,14 @@ io.on("connection", (socket)=>{
             const takenItems = players[playerIndex].list.filter((item)=>item.taken);
             console.log(takenItems);
             if(takenItems.length >= 5){
-                io.emit("game_end", {displayName: players[playerIndex].displayName});
-                rooms
+                rooms[data.roomID].state = "end";
+                io.to(data.roomID).emit("game_end", {displayName: players[playerIndex].displayName});
             }   
             
         }
 
         console.log("claimed index: " + claimedIndex);
-        console.log("active items: " + activeItems);
+        console.log("active items: " + roomTimers[data.roomID].activeItems);
     })
 })
 

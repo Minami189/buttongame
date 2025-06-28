@@ -17,6 +17,7 @@ export const AppContext = createContext();
 function App() {
   const [list, setList] = useState([{item: "error", taken: false}]);
   const [instanceID, setInstanceID] = useState();
+  const [state, setState] = useState("loading");
   const secret_jwt_key = import.meta.env.VITE_JWT_TOKEN;
 
   useEffect(()=>{
@@ -26,7 +27,7 @@ function App() {
   },[socket])
  
   return (
-    <AppContext.Provider value={{socket, list, setList, instanceID, setInstanceID, secret_jwt_key}}>
+    <AppContext.Provider value={{socket, list, setList, instanceID, setInstanceID, secret_jwt_key, state, setState}}>
       <BrowserRouter>
         <Routes>
           <Route index element={<Login/>}/>
