@@ -10,8 +10,8 @@ import { jwtDecode } from "jwt-decode";
 export default function Lobby(){
     const {socket, list, setList, instanceID, state, setState} = useContext(AppContext);
     const navigate = useNavigate();
-
-    
+    const end = useRef();
+    const [length, setLength] = useState(0);
     
     const token = localStorage.getItem("instanceID");
     let decoded;
@@ -27,13 +27,29 @@ export default function Lobby(){
     const [messages, setMessages] = useState([{}]);
     const message = useRef();
 
+    function handleChange(){
+        const msglength = message.current.value.length;
+        setLength(msglength);
+    }
+
     useEffect(()=>{
+
+        if(state == "match"){
+            navigate("/match");
+        }else if (state == "end"){
+            navigate("/end");
+        }
 
         socket.emit("check_state", {roomID: localStorage.getItem("roomID")});
 
         socket.on("update_state", (data)=>{
             setState(data.state);
-            console.log("state set to " + data.state)
+            console.log("updated state to " + data.state);
+            if(data.state == "match"){
+                navigate("/match");
+            }else if (data.state == "end"){
+                navigate("/end");
+            }
         })
 
         //check roomState on render
@@ -46,14 +62,17 @@ export default function Lobby(){
             console.log("begin")
             setState("match");
             //create list for all when game has started
-            genereateList();
+            generateList();
         })
 
         socket.on("render_list", (data)=>{
             setList(data.generatedList);
-            navigate("/match");
+            console.log("rendered list: " + data.generatedList);
         })
         
+        if(list.length > 0 ){
+            navigate("/match");
+        }
         
 
         return(()=>{
@@ -64,6 +83,14 @@ export default function Lobby(){
 
     },[])
 
+    
+        useEffect(() => {
+            if (end.current) {
+                end.current.scrollIntoView({ behavior: "smooth" });
+            }
+        }, [messages]);
+
+
     function handleSubmit(e){
         e.preventDefault();
         updateMessages();
@@ -72,7 +99,8 @@ export default function Lobby(){
     function updateMessages(){
         //update messages to all in this room with roomID
         if(message.current.value != ""){
-            socket.emit("send_message", {name:username, content:message.current.value, roomID: localStorage.getItem("roomID")});    
+            socket.emit("send_message", {name:username, content:message.current.value, roomID: localStorage.getItem("roomID")});   
+            message.current.value = ""; 
         }
     }
 
@@ -87,15 +115,20 @@ export default function Lobby(){
         socket.emit("start_game", {roomID: localStorage.getItem("roomID"), instanceID: decoded.instanceID});
     }
 
-    function genereateList(){
+    function generateList(){
         const token = localStorage.getItem("instanceToken");
         const decoded = jwtDecode(token);
         socket.emit("generate_list", {instanceID: decoded.instanceID});
     }
 
     if(state == "loading"){
+        const roomID = localStorage.getItem("roomID");
+        if(roomID == undefined || roomID == null || roomID == ""){
+            navigate("/start");
+        }
         return(<div>Loading...</div>)
     }
+
     else if(state == "lobby"){
         return(
             <div className={styles.lobbyWrapper}>
@@ -113,12 +146,14 @@ export default function Lobby(){
                                     }
                                 })
                             }
-                            
+                            <div ref={end}/>
                             
                         </div>
 
                         <form onSubmit={handleSubmit}>
-                            <input placeholder="Message" ref={message}/>
+                            <input placeholder="Message" ref={message} maxLength={70} onChange={handleChange}/>
+                            <div className={styles.msgLength}>{`${length}/70`}</div>
+                         
                         </form>        
                             
                     </div>
@@ -136,12 +171,6 @@ export default function Lobby(){
                 </div>
             </div>
         )
-    }else if(state=="match"){
-        navigate("/match");
-    }else if (state=="end"){
-        navigate("/end");
-    }else{
-        console.log("Unknown state: " + state);
     }
     
 }

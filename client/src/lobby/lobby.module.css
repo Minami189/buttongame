@@ -26,7 +26,7 @@ body{
 .chatWrapper{
     height: 80%;
     background-color: #252222;
-    width: 70%;
+    width: 90%;
     border-radius: 15px;
     display:flex;
     flex-direction: column;
@@ -39,7 +39,10 @@ body{
    display:flex;
    flex-direction: column;
    width: 90%;
-   gap: 25px;
+   gap: 10px;
+   overflow-y:scroll;
+   scrollbar-width: none;
+   
 }
 
 .chatWrapper form{
@@ -56,7 +59,7 @@ input{
     border: solid 1px gray;
     border-radius: 10px;
     font-size: 1.25rem;
-    padding: 5px 15px 5px 15px;
+    padding: 5px 10px 5px 15px;
     color:white;
 }
 
@@ -96,14 +99,20 @@ input{
 }
 
 .startButton{
-    width: 400px;
-    height: 400px;
-    font-size: 5rem;
+    width: 300px;
+    height: 300px;
+    font-size: 4rem;
     border-radius: 100%;
     transition-duration: 0.2s;
 }
 
 .startButton:hover{
     background-color: hsl(37, 75%, 65%);
-    font-size: 5.5rem;
+    font-size: 4.5rem;
+}
+
+.msgLength{
+    color:rgba(255, 255, 255, 0.712);
+    width: 1rem;
+    margin-left: 5px;
 }

@@ -13,33 +13,38 @@ export default function Match(){
     //*change later to use env variables
     const items = ["🎈","🎄","🧤","🧶","🎩","🏈","👟","🍕","🍔","🍟","🚑","👓","🎃","🎀"];
     const {list, setList, socket, state, setState} = useContext(AppContext);
-    const [denied, setDenied] = useState(true);
     const navigate = useNavigate();
 
     useEffect(()=>{
 
-        socket.emit("check_state", {roomID: localStorage.getItem("roomID")});
-
+        const roomID = localStorage.getItem("roomID")
+        if(roomID.length >= 1){
+            socket.emit("check_state", {roomID: roomID});
+        }
+        
         socket.on("update_state", (data)=>{
             setState(data.state);
-            console.log("state set to " + data.state)
+
+            if (data.state=="lobby"){
+                console.log("state: " + state)
+                navigate("/lobby");
+            }else if (data.state=="end"){
+                console.log("state: " + state)
+                navigate("/end");
+            }
+
+            //every reload we fetch the list 
+            const token = localStorage.getItem("instanceToken");
+            const decoded = jwtDecode(token);
+            if(list.length <= 0 || list === null){
+                socket.emit("get_list", {instanceID: decoded.instanceID});
+            }
         })
 
-        //every reload we fetch the list 
-        const token = localStorage.getItem("instanceToken");
-        const decoded = jwtDecode(token);
-        if(list.length <= 0 || list[0].item == "error"){
-            socket.emit("get_list", {instanceID: decoded.instanceID});
-        }
-
         socket.on("refresh_list", (data)=>{
-            if(data.list !== undefined && list.item !== "error"){
+            if(data.list !== undefined && data.list !== null){
                 setList(data.list);
-                console.log(data.list);
-                setDenied(false);
-            }else{
-                setDenied(true);
-            }        
+            }
         })
 
         socket.on("change_state", (data)=>{
@@ -47,20 +52,17 @@ export default function Match(){
             console.log("changed state to " + data.state);
         })
 
-        console.log("refresh lol")
+        
     }, [])
     
     if(state == "loading"){
+        const roomID = localStorage.getItem("roomID");
+        if(roomID == undefined || roomID == null || roomID == ""){
+            navigate("/start");
+        }
         return(<div>Loading...</div>)
     }
     else if(state == "match"){
-        if(denied == true){
-            return(
-                <div>
-                    Game already in progress...
-                </div>
-            )
-        }
         return (
             <div className={styles.above}>
             
@@ -71,12 +73,5 @@ export default function Match(){
 
             </div>
         )
-    }else if (state=="lobby"){
-        console.log("state: " + state)
-        navigate("/lobby");
-    }else if (state=="end"){
-        console.log("state: " + state)
-        navigate("/end");
     }
-    
 }

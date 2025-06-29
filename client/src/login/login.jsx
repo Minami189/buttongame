@@ -23,10 +23,17 @@ export default function Login() {
         
       // then setInstanceID globally
       setInstanceID(generatedInstanceID);
+      generateList()
     });
+
+    socket.on("render_list", (data)=>{
+      setList(data.generatedList);
+      console.log("rendered list: " + data.generatedList);
+    })
 
     return () => {
       socket.off("generate_token");
+      socket.off("render_list");
     };
   }, []);
 
@@ -37,13 +44,22 @@ export default function Login() {
   }
 
   function handlePlay(){
+   
     const token = localStorage.getItem("instanceToken");
     if(token){
-        navigate("/start");
+      generateList()
+      navigate("/start");
     }else{
-        alert("create instance first");
+      alert("create instance first");
     }
   }
+
+  function generateList(){
+        const token = localStorage.getItem("instanceToken");
+        const decoded = jwtDecode(token);
+        socket.emit("generate_list", {instanceID: decoded.instanceID});
+        console.log("list being generated")
+    }
 
   return (
     <div className={styles.loginWrapper}>

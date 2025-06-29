@@ -6,7 +6,7 @@ import Login from "./login/login.jsx";
 import { BrowserRouter, Routes, Route} from 'react-router-dom';
 import { createContext, useEffect, useState } from "react";
 import io from "socket.io-client";
-import {nanoid} from "nanoid";
+
 
 
 const socket = io.connect(import.meta.env.VITE_BACKEND_URL);
@@ -15,11 +15,13 @@ export const AppContext = createContext();
 
 
 function App() {
-  const [list, setList] = useState([{item: "error", taken: false}]);
+  const [list, setList] = useState([]);
   const [instanceID, setInstanceID] = useState();
   const [state, setState] = useState("loading");
   const secret_jwt_key = import.meta.env.VITE_JWT_TOKEN;
 
+  //used to keep track of who won
+  const [winnerName, setWinnerName] = useState();
   useEffect(()=>{
     if(localStorage.getItem("roomID")){
       socket.emit("join_room", {roomID: localStorage.getItem("roomID")});
@@ -27,7 +29,7 @@ function App() {
   },[socket])
  
   return (
-    <AppContext.Provider value={{socket, list, setList, instanceID, setInstanceID, secret_jwt_key, state, setState}}>
+    <AppContext.Provider value={{socket, list, setList, instanceID, setInstanceID, secret_jwt_key, state, setState, winnerName, setWinnerName}}>
       <BrowserRouter>
         <Routes>
           <Route index element={<Login/>}/>

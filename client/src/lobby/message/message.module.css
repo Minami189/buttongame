@@ -1,16 +1,30 @@
-.messageWrapper{
-    display:flex;
-    text-align: center;
+.messageWrapper {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    height: 1.2rem;
-    color:white;
+    width: 100%;
     font-size: 1.2rem;
+    color:white;
 }
 
 .messagerName{
-    font-weight: bold;
+    margin: 15px 5px 5px 5px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 1rem;
+    color:hsl(37, 70%, 65%);
+    display:flex;
+    width: 100%;
+    
 }
 
-.messageContent{
+.messageContent {
+    margin:0px;
     margin-left: 15px;
+    word-break: break-word;
+    background-color: hsl(37, 80%, 45%);
+    border-radius: 15px;
+    font-size: 1rem;
+    padding: 7px 15px 7px 15px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    display:inline-block;
 }

@@ -2,24 +2,27 @@ import styles from "./item.module.css";
 import { useEffect, useState, useContext } from "react";
 import {AppContext} from "../App.jsx";
 import { jwtDecode } from "jwt-decode";
-export default function Item({showItems, setShowItems}){
+
+export default function Item({selected, setSelected}){
 const {socket} = useContext(AppContext);
 //*change later to use env variables
 const items = ["🎈","🎄","🧤","🧶","🎩","🏈","👟","🍕","🍔","🍟","🚑","👓","🎃","🎀"];
-const [selected, setSelected] = useState([0]);
-const [positionx, setPositionx] = useState([0])
-const [positiony, setPositiony] = useState([0])
+
+
 
 //list and setList from match component
 const {list, setList} = useContext(AppContext);
 
 
 useEffect(()=>{
+    socket.emit("get_items", {roomID: localStorage.getItem("roomID")})
+
+    socket.on("render_items", (data)=>{
+        setSelected(data.activeItems);
+    })
+
     socket.on("populate_items", (data)=>{
-        setSelected(data.chosenItems);
-        setPositionx(data.positionx);
-        setPositiony(data.positiony);
-        setShowItems(true)
+        setSelected(data.activeItems);
     })
 
     socket.on("item_claimed", (data)=>{
@@ -55,18 +58,20 @@ useEffect(()=>{
     function itemDelete(index){
         //removing the clicked item based on its index
         setSelected(prev => prev.filter((_, i) => i !== index));
-        setPositionx(prev => prev.filter((_, i) => i !== index));
-        setPositiony(prev => prev.filter((_, i) => i !== index));
     }
 
     return(
-        <div className={showItems ? styles.showing : styles.notshowing} id="itemWrapper">
+        <div className={styles.showing}  id="itemWrapper">
             {
                 selected.map((v, i)=>{
-                    const p = (positiony[i] * ((window.innerHeight * 0.8) - 250)) + "px";
-                    const p2 = (positionx[i] * (window.innerWidth - 250)) + "px";
-
-                    return(<div key={i} className={styles.Item} style={{top: p, left: p2}} onClick={()=>handleClick(i, items[v])}>{items[v]}</div>);
+                    const p = ( v.positiony * ((window.innerHeight * 0.8) - 250)) + "px";
+                    const p2 = ( v.positionx * (window.innerWidth - 250)) + "px";
+                    console.log(items[v.chosen]);
+                    return(
+                    <div key={`item-${i}`} className={styles.Item} style={{top: p, left: p2}} onClick={()=>handleClick(i, items[v.chosen])}>
+                        {items[v.chosen]}
+                    </div>
+                    );
                 })
             }
         </div>

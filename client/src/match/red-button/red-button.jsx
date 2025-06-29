@@ -9,13 +9,12 @@ import { jwtDecode } from 'jwt-decode';
 
 
 export default function RedButton(){
-    const {socket} = useContext(AppContext);
-
+    const {socket, winnerName, setWinnerName} = useContext(AppContext);
+    const [selected, setSelected] = useState([]);
     const [active, setActive] = useState(false)
     const [message, setMessage]= useState("");
-    const [timer, setTimer] = useState()
+    const [timer, setTimer] = useState();
     const [activeNotif, setActiveNotif] = useState(false);
-    const [showItems, setShowItems] = useState(false);
     const navigate = useNavigate();
 
     //change later to whatever the username is
@@ -55,8 +54,7 @@ export default function RedButton(){
         setMessage(message);
         setActive(true);
         setActiveNotif(true);
-        setShowItems(false);
-
+        setSelected([]);
          //reset button after 2s
         setTimeout(() => {
                 setActive(false);
@@ -65,6 +63,8 @@ export default function RedButton(){
     }
 
     useEffect(()=>{
+        socket.emit("get_time", {roomID: localStorage.getItem("roomID")});
+
         socket.on("notify_press", (data)=>{
             notify(data.message);
         })
@@ -73,13 +73,10 @@ export default function RedButton(){
             setTimer(data.time);
         })
 
-        
         //listener to when a player wins
         socket.on("game_end", (data)=>{
-
+            setWinnerName(data.displayName);
             navigate("/end");
-            //right now has the issue of not auto render/refresh
-            //but will be fixed anw when going to the end game screen
         })
 
         return(()=>{
@@ -101,8 +98,8 @@ export default function RedButton(){
             </div>
         </div>
 
-        <div className={showItems ? styles.showing : styles.notshowing}>
-            <Item showItems={showItems} setShowItems={setShowItems}/>
+        <div className={styles.showing}>
+            <Item selected={selected} setSelected={setSelected}/>
         </div>
     </div>
         
