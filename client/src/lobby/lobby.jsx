@@ -20,7 +20,7 @@ export default function Lobby(){
     }
 
     //*placeholder change later to the username in localstorage/JWT
-    const username =  "Player 1";
+
 
     //instanceID here represents the ID of the user to maintain their list
     
@@ -54,7 +54,7 @@ export default function Lobby(){
 
         //check roomState on render
         socket.on("update_messages", (data)=>{
-            setMessages((prev)=> prev.concat({name:data.senderName, content:data.content}))
+            setMessages((prev)=> prev.concat({name:data.senderName, content:data.content, avatar: data.avatar}))
             console.log("messages updated...");
         })
 
@@ -97,9 +97,13 @@ export default function Lobby(){
     }
 
     function updateMessages(){
+        const token = localStorage.getItem("instanceToken");
+        const decoded = jwtDecode(token);
+        const displayName = decoded.displayName;
+        const avatar = decoded.avatar;
         //update messages to all in this room with roomID
         if(message.current.value != ""){
-            socket.emit("send_message", {name:username, content:message.current.value, roomID: localStorage.getItem("roomID")});   
+            socket.emit("send_message", {name:displayName, content:message.current.value, roomID: localStorage.getItem("roomID"), avatar: avatar});   
             message.current.value = ""; 
         }
     }
@@ -141,7 +145,7 @@ export default function Lobby(){
                                     //if statement for when in the beginning it is undefined
                                     if(v.name != undefined){
                                         return(
-                                            <Message name={v.name} content={v.content}/>
+                                            <Message name={v.name} content={v.content} avatar={v.avatar}/>
                                         )
                                     }
                                 })

@@ -14,6 +14,84 @@ body{
 }
 
 .loginWrapper button{
-    background-color: black;
+    background-color: #E59E1A;
+    font-weight: bold;
+    font-size: 2rem;  
+    width: 80%;
+    transition-duration: 0.2s;
+    position:absolute;
+    bottom: 20%;
+}
+
+button:hover{
+    background-color: hsl(39, 80%, 65%);
+}
+
+.blur{
+    width: 55%;
+    background-color: hsla(0, 0%, 0%, 0.75);
+    height: 40%;
+    border-radius: 25px;
+    backdrop-filter: blur(1.5px);
+    display:flex;
+    padding: 55px 0px 5px 50px;
+}
+
+.left{
+    display:flex;
+    flex-direction: column;
+    width: 25%;
+    align-items: center;
+    position:relative;
+}
+
+.right{
+    display:flex;
+    justify-content: center;
+    width: 65%;
+    margin-top: 7%;
+}
+
+.displayName{
+    height: 15%;
+    width: 55%;
+    background-color: hsla(39, 80%, 50%, 0.2);
+    border: black 2px solid;
+    font-size: 1.5rem;
     color:white;
+    padding: 10px 25px 10px 25px;
+}
+
+.avatarDisplay{
+    width: 100%;
+    height: 100%;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    position:relative;
+
+}
+
+.avatar{
+    width: 100%;
+    height: 60%;
+}
+
+.avatarImage{
+   width: 65%;
+
+}
+
+.leftArrow{
+    cursor: pointer;
+    width: 20%;
+    position:absolute;
+    left: 1%;
+}
+
+.rightArrow{
+    cursor: pointer;
+    width: 20%;
+    position:absolute;
+    right: 1%;
 }

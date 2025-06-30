@@ -162,7 +162,7 @@ io.on("connection", (socket)=>{
     //for messages in the lobby
     socket.on("send_message", (data)=>{
         socket.join(data.roomID);
-        io.to(data.roomID).emit("update_messages", {content: data.content, senderName: data.name});
+        io.to(data.roomID).emit("update_messages", {content: data.content, senderName: data.name, avatar: data.avatar});
     })
 
     //emitted from start game button in lobby by host
@@ -193,8 +193,9 @@ io.on("connection", (socket)=>{
     //on user creating instnace
     socket.on("login",(data)=>{
         const displayName = data.instanceDisplayName || "Player 1";
+        const avatar = data.avatar;
         const instanceID = nanoid(20);
-        const instanceToken = jwt.sign({displayName: displayName, instanceID: instanceID}, jwt_secret_key);
+        const instanceToken = jwt.sign({displayName: displayName, instanceID: instanceID, avatar: avatar}, jwt_secret_key);
 
         socket.emit("generate_token", {instanceToken: instanceToken});
     })

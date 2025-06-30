@@ -3,9 +3,16 @@ import End from "./end_screen/end.jsx";
 import Start from "./start/start.jsx";
 import Lobby from "./lobby/lobby.jsx";
 import Login from "./login/login.jsx";
+import './index.css';
 import { BrowserRouter, Routes, Route} from 'react-router-dom';
 import { createContext, useEffect, useState } from "react";
 import io from "socket.io-client";
+import avatar1 from "./assets/avatar 1.png";
+import avatar2 from "./assets/avatar 2.png";
+import avatar3 from "./assets/avatar 3.png";
+import avatar4 from "./assets/avatar 4.png";
+import avatar5 from "./assets/avatar 5.png";
+import avatar6 from "./assets/avatar 6.png";
 
 
 
@@ -15,6 +22,7 @@ export const AppContext = createContext();
 
 
 function App() {
+  const avatars = [avatar1, avatar2, avatar3, avatar4, avatar5, avatar6]
   const [list, setList] = useState([]);
   const [instanceID, setInstanceID] = useState();
   const [state, setState] = useState("loading");
@@ -29,7 +37,7 @@ function App() {
   },[socket])
  
   return (
-    <AppContext.Provider value={{socket, list, setList, instanceID, setInstanceID, secret_jwt_key, state, setState, winnerName, setWinnerName}}>
+    <AppContext.Provider value={{socket, list, setList, instanceID, setInstanceID, secret_jwt_key, state, setState, winnerName, setWinnerName, avatars}}>
       <BrowserRouter>
         <Routes>
           <Route index element={<Login/>}/>
