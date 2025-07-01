@@ -5,16 +5,18 @@ import Item from "../../item/item.jsx"
 import {useContext} from "react";
 import {AppContext} from "../../App.jsx";
 import { jwtDecode } from 'jwt-decode';
-
+import button from "../../assets/button.mp3"
 
 
 export default function RedButton(){
-    const {socket, winnerName, setWinnerName} = useContext(AppContext);
+    const {socket, winner, setWinner, avatars} = useContext(AppContext);
     const [selected, setSelected] = useState([]);
     const [active, setActive] = useState(false)
     const [message, setMessage]= useState("");
     const [timer, setTimer] = useState();
     const [activeNotif, setActiveNotif] = useState(false);
+    const [avatar, setAvatar] = useState();
+    const [disable, setDisable] = useState(false);
     const navigate = useNavigate();
 
     //change later to whatever the username is
@@ -23,50 +25,52 @@ export default function RedButton(){
 
     //client change for the clicker
     function buttonClick(){
-        
-        if(timer >= 1){
-            setActiveNotif(true);
-            setMessage("cannot press button yet!!!")
-            setTimeout(() => {
-                setActiveNotif(false);
-            }, 1000);
+        if(!disable){
+                setDisable(true);
+            if(timer >= 1){
+                setActiveNotif(true);
+                setMessage("cannot press button yet!!!")
+                setTimeout(() => {
+                    setActiveNotif(false);
+                }, 1000);
 
-        }else{
-            const token = localStorage.getItem("instanceToken");
-            const decoded = jwtDecode(token);
-            const displayName = decoded.displayName;
-            socket.emit("button_press", {displayName: displayName, roomID: localStorage.getItem("roomID")});
-            setTimer(2);
-            setActive(true);
-            notify("You pressed the button!");
+            }else{
+                const token = localStorage.getItem("instanceToken");
+                const decoded = jwtDecode(token);
+                const displayName = decoded.displayName;
+                const avatar = decoded.avatar;
+                socket.emit("button_press", {displayName: displayName, roomID: localStorage.getItem("roomID"), avatar: avatar });
+                notify("You pressed the button!", avatar);
+            }
         }
-
-        //reset button after 2s
-        setTimeout(() => {
-                setActive(false);
-                setActiveNotif(false)
-            }, 2000);
+        
     }
 
 
     //client change for other players
-    function notify(message){
+    function notify(message, avatar){
+        const buttonAudio = new Audio(button);
+        buttonAudio.volume = 1;
+        buttonAudio.play();
         setMessage(message);
+        setAvatar(avatar);
         setActive(true);
-        setActiveNotif(true);
+        console.log("avatar is now : " + avatar);
         setSelected([]);
-         //reset button after 2s
+        //reset button after 2s
         setTimeout(() => {
-                setActive(false);
-                setActiveNotif(false)
-            }, 2000);
+            setMessage("");
+            setAvatar();
+            setDisable(false);
+            setActive(false);
+        }, 2000);
     }
 
     useEffect(()=>{
         socket.emit("get_time", {roomID: localStorage.getItem("roomID")});
 
         socket.on("notify_press", (data)=>{
-            notify(data.message);
+            notify(data.message, data.avatar);
         })
 
         socket.on("timer_tick", (data)=>{
@@ -75,7 +79,8 @@ export default function RedButton(){
 
         //listener to when a player wins
         socket.on("game_end", (data)=>{
-            setWinnerName(data.displayName);
+            console.log("game ended with " + data.avatar + data.displayName);
+            setWinner({avatar: data.avatar, displayName: data.displayName});
             navigate("/end");
         })
 
@@ -90,9 +95,8 @@ export default function RedButton(){
     return(
     <div className={styles.wrapper}>
         <div className={styles.buttonWrapper} onClick={()=>buttonClick()}>
-            <div className={activeNotif ? styles.visible : styles.invisible}>{message}</div>
-            <div className={active ? styles.active : styles.buttonHead}>
-            </div>
+            <div className={styles.visible}><img src={avatars[avatar]}/>{message}</div>
+            <div className={active ? styles.active : styles.buttonHead}/>
             <div className={styles.buttonBase}>
                 <h1>{timer}</h1>
             </div>

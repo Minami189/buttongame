@@ -39,7 +39,10 @@ export default function Start(){
 
     function handleJoinRoom(){
         const room = roomInput.current.value;
-        socket.emit("join_room", {roomID: room});
+        const token = localStorage.getItem("instanceToken");
+        const decoded = jwtDecode(token);
+        const instanceID = decoded.instanceID;
+        socket.emit("join_room", {roomID: room, instanceID: instanceID});
     }
 
     function handleCreateRoom(){

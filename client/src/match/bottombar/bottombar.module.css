@@ -9,23 +9,17 @@ body{
     display:flex;
     justify-content: center;
     align-items: center;
-    gap: 50px;
+    gap: 25px;
 }
 
 .itemList{
-    font-size: 4rem;
+    font-size: 3rem;
     opacity: 40%;
-}
-
-.itemList:hover{
-    font-size: 4.5rem;
+    text-align: center;
 }
 
 .itemHave{
-    font-size: 4rem;
+    font-size: 3rem;
     opacity: 100%;
-}
-
-.itemHave:hover{
-    font-size: 4.5rem;
+    text-align: center;
 }

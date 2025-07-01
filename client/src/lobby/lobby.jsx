@@ -6,7 +6,7 @@ import {useNavigate} from "react-router-dom"
 import {nanoid} from "nanoid"
 import {AppContext} from "../App.jsx";
 import { jwtDecode } from "jwt-decode";
-
+import start from "../assets/start.mp3";
 export default function Lobby(){
     const {socket, list, setList, instanceID, state, setState} = useContext(AppContext);
     const navigate = useNavigate();
@@ -59,7 +59,9 @@ export default function Lobby(){
         })
 
         socket.on("begin_game", ()=>{
-            console.log("begin")
+            const start_audio = new Audio(start);
+            start_audio.play();
+
             setState("match");
             //create list for all when game has started
             generateList();
@@ -101,6 +103,7 @@ export default function Lobby(){
         const decoded = jwtDecode(token);
         const displayName = decoded.displayName;
         const avatar = decoded.avatar;
+        setLength(0);
         //update messages to all in this room with roomID
         if(message.current.value != ""){
             socket.emit("send_message", {name:displayName, content:message.current.value, roomID: localStorage.getItem("roomID"), avatar: avatar});   
@@ -122,7 +125,9 @@ export default function Lobby(){
     function generateList(){
         const token = localStorage.getItem("instanceToken");
         const decoded = jwtDecode(token);
-        socket.emit("generate_list", {instanceID: decoded.instanceID});
+        const avatar = decoded.avatar;
+        const displayName = decoded.displayName;
+        socket.emit("generate_list", {instanceID: decoded.instanceID, avatar:avatar,displayName:displayName});
     }
 
     if(state == "loading"){

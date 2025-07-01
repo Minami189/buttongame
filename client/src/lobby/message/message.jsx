@@ -1,11 +1,16 @@
 import styles from "./message.module.css"
-import { useContext } from "react"
+import { useContext, useEffect } from "react"
 import { AppContext } from "../../App.jsx";
-
+import message_received from "../../assets/message_received.mp3";
 
 export default function Message({name, content, avatar}){
     const {avatars} = useContext(AppContext);
-
+    useEffect(()=>{
+        const message_receive = new Audio(message_received);
+        message_receive.volume = 0.5;
+        message_receive.play();
+    }, [])  
+    
     return(
         <div className={styles.messageWrapper}>
 

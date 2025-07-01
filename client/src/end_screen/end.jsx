@@ -3,16 +3,18 @@ import { useNavigate} from "react-router-dom";
 import { useEffect, useContext } from "react";
 import { AppContext } from "../App";
 import { jwtDecode } from "jwt-decode";
-
+import endsound from "../assets/end.mp3";
 export default function End(){
     const navigate = useNavigate();
-    const {state, setState, socket, winnerName} = useContext(AppContext);
+    const {state, setState, socket, winner, avatars} = useContext(AppContext);
 
     useEffect(()=>{
-
+        const end = new Audio(endsound);
+        end.play();
     
         socket.emit("check_state", {roomID: localStorage.getItem("roomID")});
         console.log("refreshing at the end lol")
+        
         socket.on("update_state", (data)=>{
             setState(data.state);
             if(data.state == "lobby"){
@@ -62,7 +64,7 @@ export default function End(){
         //the div outside is just to make everything above the background stars
         <div className={styles.endWrapper} style={{zIndex: 5, position: "relative"}}>
             <div className={styles.blackbar}>
-                <h1>{winnerName} WON</h1>
+                <img src={avatars[winner.avatar]}/><h1>{winner.displayName} WON</h1>
             </div>
 
             <div className={styles.buttonsWrapper}>

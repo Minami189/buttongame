@@ -29,7 +29,8 @@ function App() {
   const secret_jwt_key = import.meta.env.VITE_JWT_TOKEN;
 
   //used to keep track of who won
-  const [winnerName, setWinnerName] = useState();
+  const [winner, setWinner] = useState({});
+
   useEffect(()=>{
     if(localStorage.getItem("roomID")){
       socket.emit("join_room", {roomID: localStorage.getItem("roomID")});
@@ -37,7 +38,7 @@ function App() {
   },[socket])
  
   return (
-    <AppContext.Provider value={{socket, list, setList, instanceID, setInstanceID, secret_jwt_key, state, setState, winnerName, setWinnerName, avatars}}>
+    <AppContext.Provider value={{socket, list, setList, instanceID, setInstanceID, secret_jwt_key, state, setState, winner, setWinner, avatars}}>
       <BrowserRouter>
         <Routes>
           <Route index element={<Login/>}/>

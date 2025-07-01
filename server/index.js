@@ -12,7 +12,6 @@ dotenv.config();
 const jwt_secret_key = process.env.JWT_KEY
 
 
-let timer = 2;
 const items = ["🎈","🎄","🧤","🧶","🎩","🏈","👟","🍕","🍔","🍟","🚑","👓","🎃","🎀"];
 
 
@@ -55,8 +54,6 @@ io.on("connection", (socket)=>{
         }else{
             socket.emit("not_host");
         }
-        
-        
     })
 
     socket.on("get_time", (data)=>{
@@ -79,12 +76,12 @@ io.on("connection", (socket)=>{
 
     socket.on("button_press", (data)=>{
         socket.join(data.roomID);
-        socket.to(data.roomID).emit("notify_press" ,{message: `${data.UID} pressed the button!`})
+        socket.to(data.roomID).emit("notify_press" ,{message: `${data.displayName} pressed the button!`, avatar: data.avatar})
 
         if(roomTimers[data.roomID] !== undefined){
             if(roomTimers[data.roomID].currTime <= 0){
                 roomTimers[data.roomID].interval.refresh();
-                roomTimers[data.roomID].currTime = 2; 
+                roomTimers[data.roomID].currTime = process.env.TIMER_BEGIN; 
                 roomTimers[data.roomID].pause = false
                 io.to(data.roomID).emit("timer_tick", {time: roomTimers[data.roomID].currTime});
                 
@@ -103,7 +100,7 @@ io.on("connection", (socket)=>{
                 socket.leave(v);
             }
         })
-        rooms[data.roomID]= {roomID:data.roomID, host: data.host, state: data.state};
+        rooms[data.roomID]= {roomID:data.roomID, host: data.host, state: data.state, players:[data.host]};
         changeState(io, "lobby", data.roomID);
         
         socket.join(data.roomID);
@@ -112,7 +109,7 @@ io.on("connection", (socket)=>{
         roomTimers[data.roomID] = {
             activeItems: [],
             pause: true,
-            currTime: 2,
+            currTime: 10,
             interval: setInterval(()=>{
                 if(roomTimers[data.roomID].currTime >= 1){
                     roomTimers[data.roomID].currTime--;
@@ -150,9 +147,10 @@ io.on("connection", (socket)=>{
 // join_room: check from your list 
     socket.on("join_room", (data) => {
         const roomID = data.roomID;
-        
+        const instanceID = data.instanceID;
         if (io.sockets.adapter.rooms.has(roomID)) {
             socket.join(roomID);
+            rooms[roomID].players.push(instanceID);
             socket.emit("attempt_join", { success: true, roomID });
         } else {
             socket.emit("attempt_join", { success: false });
@@ -170,7 +168,7 @@ io.on("connection", (socket)=>{
         const roomID = data.roomID;
         const instanceID = data.instanceID;
         roomTimers[roomID].pause = false;
-
+        roomTimers[roomID].currTime = process.env.TIMER_BEGIN;
         //join first
         socket.join(roomID);  
 
@@ -182,9 +180,7 @@ io.on("connection", (socket)=>{
                 rooms[roomID].state="match";
                 io.to(roomID).emit("begin_game");
                 io.to(roomID).emit("update_state", {state: rooms[roomID].state});
-            }else{
-
-            } 
+            }
         }
 
         
@@ -196,8 +192,9 @@ io.on("connection", (socket)=>{
         const avatar = data.avatar;
         const instanceID = nanoid(20);
         const instanceToken = jwt.sign({displayName: displayName, instanceID: instanceID, avatar: avatar}, jwt_secret_key);
-
+        players = players.concat({displayName: displayName, instanceID: instanceID, avatar:avatar});
         socket.emit("generate_token", {instanceToken: instanceToken});
+        console.log(players);
     })
     
 
@@ -228,22 +225,19 @@ io.on("connection", (socket)=>{
         }
 
         if(players.length <= 0){
-            players = players.concat({instanceID: instanceID, list: generatedList})
+            players = players.concat({instanceID: instanceID, list: generatedList, avatar:avatar, displayName:displayName})
 
         }else{
             for(let i = 0; i < players.length; i++){
                 if(players[i].instanceID == instanceID){
                     players[i].list = generatedList;
-
                     break;
-                }else{
-                    players = players.concat({instanceID: instanceID, list: generatedList})
-
                 }
             }
         }
 
         //for clientside rendering of this
+        console.log(players);
         socket.emit("render_list", {generatedList: generatedList});
     })
 
@@ -254,14 +248,20 @@ io.on("connection", (socket)=>{
 
     })
 
-    //*MUST BE CHANGED LATER WITH NEW SYSTEM
     socket.on("click_item", (data)=>{
         const claimedIndex = data.clickedindex;
 
         //UID of player who clicked
         const instanceID = data.instanceID;
         const clickedItem = data.clickedItem;
-
+        let displayName;
+        for(let i = 0; i < players.length; i++){
+            if(players[i].instanceID == instanceID){
+                displayName = players[i].displayName;
+                break;
+            }
+        }
+        
    
         let list;
         let playerIndex;
@@ -271,10 +271,6 @@ io.on("connection", (socket)=>{
                 playerIndex = i;
             }
         }
-
-
-        
-
         
         if (claimedIndex >= 0 && claimedIndex < roomTimers[data.roomID].activeItems.length) {
             //reset everytime to -1 cuz we are checking 
@@ -296,16 +292,21 @@ io.on("connection", (socket)=>{
                 list[foundIndex].taken = true;
                 players[playerIndex].list[foundIndex].taken = true;
                 roomTimers[data.roomID].activeItems.splice(claimedIndex, 1);
-                io.emit("item_claimed", { claim_index: claimedIndex, instanceID:  instanceID, clickedItem: clickedItem, list: players[playerIndex].list});
+                io.to(data.roomID).emit("item_claimed", { 
+                    claim_index: claimedIndex, instanceID:  instanceID, clickedItem: clickedItem, list: players[playerIndex].list, displayName: displayName,
+                    posx: data.posx, posy:data.posy, avatar: data.avatar
+                });
             }
             
 
             const takenItems = players[playerIndex].list.filter((item)=>item.taken);
             console.log(takenItems);
-            if(takenItems.length >= 5){
+            console.log(playerIndex)
+            console.log("clicker : " + players[playerIndex].displayName);
+            if(takenItems.length >= 5 && rooms[data.roomID] !== undefined){
                 rooms[data.roomID].state = "end";
-                io.to(data.roomID).emit("game_end", {displayName: players[playerIndex].displayName});
-                io.to(roomID).emit("update_state", {state: rooms[roomID].state});
+                io.to(data.roomID).emit("game_end", {displayName: players[playerIndex].displayName, avatar: players[playerIndex].avatar});
+                io.to(data.roomID).emit("update_state", {state: rooms[data.roomID].state});
             }   
             
         }
