@@ -1,24 +1,24 @@
 body{
-    margin: 0px;
+  margin: 0px;
 }
 
 .effectWrapper{
-    position: absolute;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 15px;
-    font-size: 1.2rem;
-    z-index: 20;
-    background: rgba(0,0,0,0.7);
-    display:flex;
-    align-items: center;
-    animation: floatUp 2.5s forwards;
+  position: absolute;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 15px;
+  font-size: 1.2rem;
+  z-index: 20;
+  background: rgba(0,0,0,0.7);
+  display:flex;
+  align-items: center;
+  animation: floatUp 2.5s forwards;
 }
 
 
 
 .effectWrapper img{
-    width: 2rem;
+  width: 2rem;
 }
 
 @keyframes floatUp {
@@ -31,3 +31,4 @@ body{
     transform: translateY(-30px);
   }
 }
+

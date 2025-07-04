@@ -13,7 +13,7 @@ import avatar3 from "./assets/avatar 3.png";
 import avatar4 from "./assets/avatar 4.png";
 import avatar5 from "./assets/avatar 5.png";
 import avatar6 from "./assets/avatar 6.png";
-
+import botAvatar from "./assets/botAvatar.png"
 
 
 const socket = io.connect(import.meta.env.VITE_BACKEND_URL);
@@ -22,7 +22,7 @@ export const AppContext = createContext();
 
 
 function App() {
-  const avatars = [avatar1, avatar2, avatar3, avatar4, avatar5, avatar6]
+  const avatars = [avatar1, avatar2, avatar3, avatar4, avatar5, avatar6, botAvatar];
   const [list, setList] = useState([]);
   const [instanceID, setInstanceID] = useState();
   const [state, setState] = useState("loading");

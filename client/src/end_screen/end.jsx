@@ -35,14 +35,6 @@ export default function End(){
     },[])
     
 
-    function handlePlayAgain(){
-        const roomID = localStorage.getItem("roomID");
-        const token = localStorage.getItem("instanceToken");
-        const decoded = jwtDecode(token);
-        const instanceID =  decoded.instanceID;
-        socket.emit("restart_game", {roomID: roomID, instanceID: instanceID});
-    }
-
     function handleNewRoom(){
         localStorage.removeItem("roomID");
         navigate("/start")
@@ -68,7 +60,6 @@ export default function End(){
             </div>
 
             <div className={styles.buttonsWrapper}>
-                <button onClick={()=>handlePlayAgain()}>Play Again</button>
                 <button onClick={()=>handleNewRoom()}>New Room</button>
             </div>
             

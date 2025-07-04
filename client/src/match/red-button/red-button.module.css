@@ -44,16 +44,8 @@
     font-size: 2rem;
 }
 
-.invisible{
-    position:absolute;
-    top: 50px;
-    transition:  top 0.2s;
-    color:black;
-    font-weight: bold;
-    font-size: 1.5rem;
-}
-
 .visible{
+    display:block;
     position:absolute;
     top: -50px;
     transition:  top 0.2s;
@@ -62,10 +54,30 @@
     font-size: 1.5rem;
     display:flex;
     align-items: center;
+    animation: floatUp 3s forwards
+}
+
+.invisible{
+    display:none;
 }
 
 .visible img{
     width: 3rem;
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-30px);
+  }
+  100%{
+    opacity: 0;
+    transform: translateY(-30px);
+  }
 }
 
 .showing{

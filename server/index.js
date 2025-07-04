@@ -74,22 +74,54 @@ io.on("connection", (socket)=>{
         
     })
 
-    socket.on("button_press", (data)=>{
-        socket.join(data.roomID);
-        socket.to(data.roomID).emit("notify_press" ,{message: `${data.displayName} pressed the button!`, avatar: data.avatar})
+   socket.on("button_press", (data) => {
+        if (!roomTimers[data.roomID]) return;
 
-        if(roomTimers[data.roomID] !== undefined){
-            if(roomTimers[data.roomID].currTime <= 0){
-                roomTimers[data.roomID].interval.refresh();
-                roomTimers[data.roomID].currTime = process.env.TIMER_BEGIN; 
-                roomTimers[data.roomID].pause = false
-                io.to(data.roomID).emit("timer_tick", {time: roomTimers[data.roomID].currTime});
-                
-                roomTimers[data.roomID].activeItems = [];
+        socket.join(data.roomID);
+
+        // Deny if timer is running
+        if (roomTimers[data.roomID].currTime > 0) {
+            socket.emit("notify_denial", { avatar: data.avatar, message: "can't press now" });
+            return;
+        }
+
+        // Deny if same player pressed last round
+        if (roomTimers[data.roomID].lastPresser === data.instanceID) {
+            socket.emit("notify_denial", { avatar: data.avatar, message: "already pressed last round" });
+            return;
+        }
+
+
+        if (roomTimers[data.roomID].currTime <= 0 && !roomTimers[data.roomID].pressThisRound) {
+            roomTimers[data.roomID].pressThisRound = true;
+            roomTimers[data.roomID].presser = data.instanceID;
+
+            roomTimers[data.roomID].interval.refresh();
+            roomTimers[data.roomID].currTime = process.env.TIMER_BEGIN;
+            roomTimers[data.roomID].pause = false;
+            roomTimers[data.roomID].activeItems = [];
+
+            io.to(data.roomID).emit("timer_tick", {
+                time: roomTimers[data.roomID].currTime
+            });
+
+            io.to(data.roomID).emit("notify_press", {
+                message: `${data.displayName} pressed the button!`,
+                avatar: data.avatar,
+            });
+
+
+            //clearTimeout here so that it only clears when a player was actually
+            //able to reset not just press button
+            if (roomTimers[data.roomID].autoPressTimeout) {
+                clearTimeout(roomTimers[data.roomID].autoPressTimeout);
+                roomTimers[data.roomID].autoPressTimeout = null;
             }
         }
-        
-    })
+    });
+
+
+
 
     socket.on("create_room", (data) => {
         
@@ -107,6 +139,7 @@ io.on("connection", (socket)=>{
 
         //create timer per room
         roomTimers[data.roomID] = {
+            pressThisRound: false,
             activeItems: [],
             pause: true,
             currTime: 10,
@@ -120,7 +153,32 @@ io.on("connection", (socket)=>{
                     let newItems = [];
                     roomTimers[data.roomID].pause = true;
 
-                    for (let i = 0; i < 5; i++){
+                    // GUARANTEED ITEM spawn for last presser
+                    if (roomTimers[data.roomID].lastPresser !== undefined) {
+                        const player = players.find((p) => p.instanceID === roomTimers[data.roomID].lastPresser);
+                        if (player) {
+                            const untaken = player.list.filter(i => !i.taken);
+                            if (untaken.length > 0) {
+                                const randIndex = Math.floor(Math.random() * untaken.length);
+                                const guaranteedItem = untaken[randIndex].item;
+
+                                
+                                const guaranteedItemIndex = items.findIndex(i => i === guaranteedItem);
+
+                               
+                                newItems.push({
+                                    chosen: guaranteedItemIndex,
+                                    positiony: Math.random(),
+                                    positionx: Math.random()
+                                });
+                            }
+                        }
+                    }
+
+                    
+
+                    //*change later the '5' to env variable
+                    for (let i = 0; i < process.env.ITEM_SPAWN_AMOUNT; i++){
                         let chosen = Math.round(Math.random() * 13);
                         let positiony =Math.random();
                         let positionx = Math.random();
@@ -134,7 +192,35 @@ io.on("connection", (socket)=>{
                         );
 
                     }
+                    
+                    if (!roomTimers[data.roomID].autoPressTimeout) {
+                        roomTimers[data.roomID].autoPressTimeout = setTimeout(() => {
+                        // Only work when noone auto press
+                            if (!roomTimers[data.roomID].pressThisRound) {
 
+                                io.to(data.roomID).emit("timeout");
+                                roomTimers[data.roomID].pressThisRound = true;
+                                roomTimers[data.roomID].presser = null; // No player
+
+                                // Refresh timer
+                                roomTimers[data.roomID].interval.refresh();
+                                roomTimers[data.roomID].currTime = process.env.TIMER_BEGIN;
+                                roomTimers[data.roomID].pause = false;
+                                roomTimers[data.roomID].activeItems = [];
+
+                                io.to(data.roomID).emit("timer_tick", {
+                                    time: roomTimers[data.roomID].currTime
+                                });
+
+                                // Clear timeout reference
+                                roomTimers[data.roomID].autoPressTimeout = null;
+                            }
+                        }, process.env.TIMEOUT * 1000); // 10 seconds
+                    }
+                    
+                    roomTimers[data.roomID].lastPresser = roomTimers[data.roomID].presser;
+                    roomTimers[data.roomID].presser = undefined;
+                    roomTimers[data.roomID].pressThisRound = false;
                     roomTimers[data.roomID].activeItems = newItems;
                     io.to(data.roomID).emit("populate_items", {activeItems: roomTimers[data.roomID].activeItems})
                 }
@@ -194,7 +280,6 @@ io.on("connection", (socket)=>{
         const instanceToken = jwt.sign({displayName: displayName, instanceID: instanceID, avatar: avatar}, jwt_secret_key);
         players = players.concat({displayName: displayName, instanceID: instanceID, avatar:avatar});
         socket.emit("generate_token", {instanceToken: instanceToken});
-        console.log(players);
     })
     
 
@@ -237,7 +322,6 @@ io.on("connection", (socket)=>{
         }
 
         //for clientside rendering of this
-        console.log(players);
         socket.emit("render_list", {generatedList: generatedList});
     })
 
@@ -300,11 +384,9 @@ io.on("connection", (socket)=>{
             
 
             const takenItems = players[playerIndex].list.filter((item)=>item.taken);
-            console.log(takenItems);
-            console.log(playerIndex)
-            console.log("clicker : " + players[playerIndex].displayName);
             if(takenItems.length >= 5 && rooms[data.roomID] !== undefined){
                 rooms[data.roomID].state = "end";
+                clearTimeout(roomTimers[data.roomID].autoPressTimeout);
                 io.to(data.roomID).emit("game_end", {displayName: players[playerIndex].displayName, avatar: players[playerIndex].avatar});
                 io.to(data.roomID).emit("update_state", {state: rooms[data.roomID].state});
             }   
@@ -317,7 +399,7 @@ io.on("connection", (socket)=>{
 
 
 
-
+  
 
 
 io.listen(3000);
