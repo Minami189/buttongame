@@ -153,9 +153,9 @@ io.on("connection", (socket)=>{
                     let newItems = [];
                     roomTimers[data.roomID].pause = true;
 
-                    // GUARANTEED ITEM spawn for last presser
-                    if (roomTimers[data.roomID].lastPresser !== undefined) {
-                        const player = players.find((p) => p.instanceID === roomTimers[data.roomID].lastPresser);
+                    // GUARANTEED ITEM spawn for presser
+                    if (roomTimers[data.roomID].presser !== undefined) {
+                        const player = players.find((p) => p.instanceID === roomTimers[data.roomID].presser);
                         if (player) {
                             const untaken = player.list.filter(i => !i.taken);
                             if (untaken.length > 0) {
