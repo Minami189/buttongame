@@ -7,11 +7,9 @@ const server = http.createServer(app);
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const {nanoid} = require("nanoid");
-//jwt initialization
+
 dotenv.config();
 const jwt_secret_key = process.env.JWT_KEY
-
-
 const items = ["🎈","🎄","🧤","🧶","🎩","🏈","👟","🍕","🍔","🍟","🚑","👓","🎃","🎀"];
 
 
@@ -24,9 +22,13 @@ let rooms = {};
 let roomTimers = {};
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173",
+        origin: "*",
         methods: ["GET", "POST", "PUT"]
     }
+});
+
+app.get("/", (req, res) => {
+  res.send("🎉 Backend with Socket.IO is running!");
 });
 
 
@@ -396,10 +398,7 @@ io.on("connection", (socket)=>{
 })
 
 
-
-
-
-  
-
-
-io.listen(3000);
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
+});
