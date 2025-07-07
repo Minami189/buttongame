@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import {jwtDecode} from "jwt-decode";
 import left from "../assets/left.png"
 import right from "../assets/right.png"
+import uiClickSound from "../assets/ui-click.mp3";
 
 export default function Login() {
   // change later to be an input
@@ -50,7 +51,9 @@ export default function Login() {
     
   }, []);
 
+  const uiClick = new Audio(uiClickSound);
   function handleCreate() {
+    uiClick.play();
     const displayName = nameInput.current.value;
     if(displayName !== undefined && displayName!== null && displayName !== ""){
       localStorage.clear();
@@ -63,14 +66,16 @@ export default function Login() {
   }
 
   function handleLeft(){
+    uiClick.play();
     if(chosenAvatar > 0){
       setChosenAvatar(prev => prev-1);
     }else{
-      setChosenAvatar(avatars.length-1);
+      setChosenAvatar(5);
     }
   }
 
   function handleRight(){
+    uiClick.play();
     if(chosenAvatar < 5){
       setChosenAvatar(prev => prev+1);
     }else{
@@ -99,8 +104,8 @@ export default function Login() {
             </div>
           </div>
 
-          <button onClick={handleCreate}>
-            Confirm
+          <button onClick={handleCreate} className={styles.continueButton}>
+            Continue
           </button>
         </div>
 

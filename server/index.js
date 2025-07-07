@@ -87,7 +87,7 @@ io.on("connection", (socket)=>{
 
         // Deny if same player pressed last round
         if (roomTimers[data.roomID].lastPresser === data.instanceID) {
-            socket.emit("notify_denial", { avatar: data.avatar, message: "already pressed last round" });
+            socket.emit("notify_denial", { avatar: data.avatar, message: "wait for next round" });
             return;
         }
 

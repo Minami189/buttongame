@@ -1,0 +1,47 @@
+.tutorialWrapper{
+    width: 100vw;
+    height: 100vh;
+    position:absolute;
+    top:0px;
+    left:0px;
+    z-index: 25;
+    background-color: rgba(0, 0, 0, 0.753);
+    display:flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tutorialBody{
+    background-color: #eda737;
+    border-radius: 15px;
+    width: 80%;
+    height: 90%;
+    padding: 1%
+}
+
+.section{
+    display:flex;
+    width:100%;
+    padding: 25px;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.sectionText{
+    font-weight: bold;
+    color: #252222;
+}
+
+.header{
+    display: flex;
+    align-items: center;
+}
+
+.content{
+    width:70%;
+    font-family: Poppins;
+}
+
+.content p {
+    margin-left: 25px;
+}

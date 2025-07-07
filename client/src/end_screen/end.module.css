@@ -1,39 +1,45 @@
 .endWrapper{
-    display:flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+  display:flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
 
 .blackbar{
-    background-color: #252222;
-    color:white;
-    font-size: 4rem;
-    width: 100vw;
-    display:flex;
-    justify-content: center;
-    align-items: center;
-    animation: slideFadeIn 1s ease-out forwards;
+  background-color: #252222;
+  color:white;
+  font-size: 4rem;
+  width: 100vw;
+  display:flex;
+  justify-content: center;
+  align-items: center;
+  animation: slideFadeIn 1s ease-out forwards;
 }
 
-.buttonsWrapper{
-    margin-top: 50px;
-    display:flex;
-    justify-content: center;
-    gap: 150px;
+.buttonsWrapper2{
+  margin-top: 50px;
+  display:flex;
+  justify-content: center;
+  gap: 150px;
 }
 
-.buttonsWrapper button{
-    background-color: #F5F5F5;
-    color: #252222; 
-    font-size: 2rem;
-    padding: 15px 25px 15px 25px;
-    border:none;
-    border-radius: 15px;
-    font-weight: bold;
-    cursor:pointer;
-    animation: buttonPulse 0.6s ease-in-out;
+.buttonsWrapper2 button{
+  background-color:#252222;
+  color: #ffffff; 
+  font-size: 2rem;
+  padding: 15px 25px 15px 25px;
+  border:none;
+  border-radius: 15px;
+  font-weight: bold;
+  cursor:pointer;
+  animation: buttonPulse 0.6s ease-in-out;
+  position:relative;
+  transition-duration: 0.5s;
+}
+
+.buttonsWrapper2 button:hover{
+  background-color: #252222cc;
 }
 
 .blackbar img{

@@ -13,19 +13,6 @@ body{
     align-items: center;
 }
 
-.loginWrapper button{
-    background-color: #E59E1A;
-    font-weight: bold;
-    font-size: 2rem;  
-    width: 80%;
-    transition-duration: 0.2s;
-    position:absolute;
-    bottom: 20%;
-}
-
-button:hover{
-    background-color: hsl(39, 80%, 65%);
-}
 
 .blur{
     width: 55%;
@@ -94,4 +81,48 @@ button:hover{
     width: 20%;
     position:absolute;
     right: 1%;
+}
+
+.continueButton{
+    font-size: 2rem;
+    height: 60px;
+    width: 200px;
+    text-align: center;
+    position: relative;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.continueButton::after{
+    content:"";
+    border-radius: 15px;
+    position:absolute;
+    top:0px;
+    left:0px;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    height:100%;
+    width:0%;
+    z-index: -1;
+    font-size: 0px;
+    transition: 1s;
+}
+
+button.continueButton:hover::after {
+    content:"GOOOO";
+    position:absolute;
+    top:0px;
+    left:0px;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to right, hsl(37, 83%, 60%), hsl(37, 83%, 70%));
+    border-radius: 15px;
+    height:100%;
+    width:100%;
+    font-size: 2rem;
+    z-index: 5;
 }

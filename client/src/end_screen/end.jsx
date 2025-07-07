@@ -4,6 +4,7 @@ import { useEffect, useContext } from "react";
 import { AppContext } from "../App";
 import { jwtDecode } from "jwt-decode";
 import endsound from "../assets/end.mp3";
+import uiClickSound from "../assets/ui-click.mp3"
 export default function End(){
     const navigate = useNavigate();
     const {state, setState, socket, winner, avatars} = useContext(AppContext);
@@ -36,6 +37,8 @@ export default function End(){
     
 
     function handleNewRoom(){
+        const uiClick = new Audio(uiClickSound);
+        uiClick.play()
         localStorage.removeItem("roomID");
         navigate("/start")
     }
@@ -59,8 +62,8 @@ export default function End(){
                 <img src={avatars[winner.avatar]}/><h1>{winner.displayName} WON</h1>
             </div>
 
-            <div className={styles.buttonsWrapper}>
-                <button onClick={()=>handleNewRoom()}>New Room</button>
+            <div className={styles.buttonsWrapper2}>
+                <button className={styles.newRoomButton} onClick={()=>handleNewRoom()}>New Room</button>
             </div>
             
         </div>

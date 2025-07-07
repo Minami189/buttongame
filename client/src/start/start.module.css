@@ -7,15 +7,22 @@
 }
 
 .gameTitle{
-    font-size: 8rem;
-    text-align: center;
+    padding-top: 4rem;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.gameTitle img{
+    width: 30%;
+    height: 20%;
 }
 
 .buttonsWrapper{
-    margin-top: 50px;
+
     display:flex;
     justify-content: center;
-
     gap: 250px;
 }
 
@@ -30,11 +37,12 @@ button{
     font-weight: bold;
     cursor:pointer;
     background-color: hsl(37, 83%, 54%);
+    display:inline-block;
 }
 
 .joinRoom, .createRoom{
     width: 250px;
-    height: 370px;
+    height: 420px;
     display:flex;
     flex-direction: column;
     background-color: #252222;

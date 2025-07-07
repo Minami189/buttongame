@@ -4,14 +4,18 @@ import { useNavigate } from "react-router-dom";
 import { AppContext } from "../App";
 import {nanoid} from "nanoid";
 import { jwtDecode } from "jwt-decode";
-
-
+import uiClickSound from "../assets/ui-click.mp3";
+import logo from "../assets/logo.png"
+import Tutorial  from "./tutorial/tutorial";
 
 export default function Start(){
     const {socket, instanceID, state, setState} = useContext(AppContext);
     const roomInput = useRef(); 
     const navigate = useNavigate();
     const [message, setMessage] = useState("");
+    const [showTutorial, setShowTutorial] = useState(false);
+
+    const uiClick = new Audio(uiClickSound);
     useEffect(()=>{
         socket.on("attempt_join", (data)=>{
             if(data.success){
@@ -38,6 +42,7 @@ export default function Start(){
     },[])
 
     function handleJoinRoom(){
+        uiClick.play()
         const room = roomInput.current.value;
         const token = localStorage.getItem("instanceToken");
         const decoded = jwtDecode(token);
@@ -46,6 +51,7 @@ export default function Start(){
     }
 
     function handleCreateRoom(){
+        uiClick.play()
         const roomID = nanoid(5);
         const token = localStorage.getItem("instanceToken");
         const decoded = jwtDecode(token);
@@ -60,11 +66,20 @@ export default function Start(){
         navigate("/lobby");
     }
 
+    function handleTutorial(){
+        uiClick.play()
+        setShowTutorial(true);
+    }
+
+    
     return(
+        
         <div className={styles.roomsWrapper}>
-            <h1 className={styles.gameTitle}>
-                Game Title
-            </h1>
+            <Tutorial setShowTutorial={setShowTutorial} showTutorial={showTutorial}/>
+
+            <div className={styles.gameTitle}>
+                <img src={logo}/>
+            </div>
 
             <div className={styles.buttonsWrapper}>
                 
@@ -75,7 +90,8 @@ export default function Start(){
                     <h1 style={{marginTop: "55px"}}>Join a Room</h1>
                     <input placeholder="Room ID" ref={roomInput}/>
                     <button onClick={()=>handleJoinRoom()}>Join</button>
-                    <p style={{color:"red", fontSize:"1rem", textAlign:"center", display:"inline", margin:"0px", marginTop:"1rem"}}>{message}</p>
+                    <p style={{color:"red", fontSize:"1rem", textAlign:"center", display:"inline-block", margin:"0px", padding:"0px", lineHeight:"0px", marginTop:"1rem"}}>{message}</p>
+                    <button onClick={handleTutorial} style={{marginTop: "25px"}}>How To Play</button>
                     
                 </div>
 
@@ -83,4 +99,6 @@ export default function Start(){
             
         </div>
     )
+
+    
 }
