@@ -16,7 +16,7 @@ import avatar6 from "./assets/avatar 6.png";
 import botAvatar from "./assets/botAvatar.png"
 
 
-const socket = io.connect(import.meta.env.VITE_BACKEND_URL);
+const socket = io.connect(process.env.REACT_APP_API_URL);
 
 export const AppContext = createContext();
 
@@ -26,7 +26,7 @@ function App() {
   const [list, setList] = useState([]);
   const [instanceID, setInstanceID] = useState();
   const [state, setState] = useState("loading");
-  const secret_jwt_key = import.meta.env.VITE_JWT_TOKEN;
+  const secret_jwt_key = process.env.REACT_APP_API_URL;
 
   //used to keep track of who won
   const [winner, setWinner] = useState({});
